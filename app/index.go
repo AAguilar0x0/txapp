@@ -1,9 +1,9 @@
 package app
 
 import (
-	"context"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/AAguilar0x0/bapp/core/services"
 	"github.com/AAguilar0x0/bapp/extern/db/psql"
@@ -42,12 +42,17 @@ func (d *App) CleanUp(cleanups ...AppCallback) *App {
 }
 
 func (d *App) Run(cb func()) {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	done := make(chan bool, 1)
 	go func() {
 		cb()
+		done <- true
 	}()
-	<-ctx.Done()
+	select {
+	case <-sigCh:
+	case <-done:
+	}
 	for _, cb := range d.cleanupCB {
 		cb(d)
 	}
