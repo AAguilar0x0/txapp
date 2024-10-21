@@ -6,6 +6,5 @@ INSERT INTO users (
 )
 RETURNING *;
 
--- name: CountUser :one
-SELECT count(*) FROM users;
-
+-- name: GetUserForAuth :one
+SELECT users.id, users.password, users.role FROM users WHERE email = $1;

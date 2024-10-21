@@ -27,9 +27,9 @@ audit: tidy test
 ## tidy: cleanup and format code and tidy modfile
 .PHONY: tidy
 tidy:
+	go mod tidy -v
 	go vet ./...
 	go clean
-	go mod tidy -v
 	go fmt ./...
 
 ## test: run all tests

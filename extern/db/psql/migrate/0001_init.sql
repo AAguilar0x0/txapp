@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
   password  TEXT  NOT NULL,
   first_name  TEXT  NOT NULL,
   last_name  TEXT NOT NULL,
-  role  TEXT  NOT NULL
+  role  TEXT  NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL
 );
 

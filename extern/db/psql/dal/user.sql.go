@@ -7,18 +7,9 @@ package psqldal
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
-
-const countUser = `-- name: CountUser :one
-SELECT count(*) FROM users
-`
-
-func (q *Queries) CountUser(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countUser)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
@@ -26,7 +17,7 @@ INSERT INTO users (
 ) VALUES (
  $1, $2, $3, $4, $5
 )
-RETURNING id, email, password, first_name, last_name, role
+RETURNING id, email, password, first_name, last_name, role, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -53,6 +44,25 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.FirstName,
 		&i.LastName,
 		&i.Role,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
+	return i, err
+}
+
+const getUserForAuth = `-- name: GetUserForAuth :one
+SELECT users.id, users.password, users.role FROM users WHERE email = $1
+`
+
+type GetUserForAuthRow struct {
+	ID       pgtype.UUID `json:"id"`
+	Password string      `json:"password"`
+	Role     string      `json:"role"`
+}
+
+func (q *Queries) GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, error) {
+	row := q.db.QueryRow(ctx, getUserForAuth, email)
+	var i GetUserForAuthRow
+	err := row.Scan(&i.ID, &i.Password, &i.Role)
 	return i, err
 }
