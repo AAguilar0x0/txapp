@@ -20,11 +20,11 @@ func Database(cb func(db *psql.DB)) AppCallback {
 			return
 		}
 		db, err := psql.New(
-			"localhost",
-			"postgres",
-			"postgres",
-			"postgres",
-			"5432",
+			app.Env.CommandLineFlagWithDefault("DB_HOST", "localhost"),
+			app.Env.CommandLineFlagWithDefault("DB_USER", "postgres"),
+			app.Env.CommandLineFlagWithDefault("DB_PASSWORD", "postgres"),
+			app.Env.CommandLineFlagWithDefault("DB_NAME", "postgres"),
+			app.Env.CommandLineFlagWithDefault("DB_PORT", "5432"),
 		)
 		assert.NoError(err, "psql instantiation", "fault", "New")
 		cb(db)
