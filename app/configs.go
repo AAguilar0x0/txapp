@@ -6,6 +6,7 @@ import (
 	authcustom "github.com/AAguilar0x0/bapp/extern/auth/custom"
 	"github.com/AAguilar0x0/bapp/extern/db/psql"
 	"github.com/AAguilar0x0/bapp/extern/env"
+	"github.com/AAguilar0x0/bapp/pkg/assert"
 )
 
 func environment(app *App) {
@@ -25,9 +26,7 @@ func Database(cb func(db *psql.DB)) AppCallback {
 			"postgres",
 			"5432",
 		)
-		if err != nil {
-			panic(err.Error())
-		}
+		assert.NoError(err, "psql instantiation", "fault", "New")
 		cb(db)
 		app.CleanUp(func(app *App) {
 			db.Close()
@@ -43,9 +42,7 @@ func Auth(cb func(auth services.Authenticator)) AppCallback {
 		}
 		appSecret := app.Env.CommandLineFlagPanics("AUTH_SECRET")
 		auth, err := authcustom.New([]byte(appSecret))
-		if err != nil {
-			panic(err.Error())
-		}
+		assert.NoError(err, "authcustom instantiation", "fault", "New")
 		cb(auth)
 	}
 }
@@ -63,9 +60,7 @@ func UserController(cb func(data *user.User)) AppCallback {
 			})(app)
 		}
 		temp, err := user.New(app.services.db, app.services.auth)
-		if err != nil {
-			panic(err.Error())
-		}
+		assert.NoError(err, "user instantiation", "fault", "New")
 		cb(temp)
 	}
 }

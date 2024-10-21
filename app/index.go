@@ -7,6 +7,7 @@ import (
 
 	"github.com/AAguilar0x0/bapp/core/services"
 	"github.com/AAguilar0x0/bapp/extern/db/psql"
+	"github.com/AAguilar0x0/bapp/pkg/assert"
 )
 
 type AppCallback func(app *App)
@@ -23,6 +24,7 @@ type App struct {
 func New() *App {
 	d := App{}
 	d.Config(environment)
+	assert.Assert(d.Env != nil, "unexpected Env nil value", "fault", "App.Env")
 	return &d
 }
 
@@ -34,6 +36,7 @@ func (d *App) Config(configs ...AppCallback) *App {
 }
 
 func (d *App) CleanUp(cleanups ...AppCallback) *App {
+	assert.Assert(d.Env != nil, "unexpected Env nil value", "fault", "App.Env")
 	d.cleanupCB = append(d.cleanupCB, cleanups...)
 	return d
 }

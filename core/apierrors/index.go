@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/AAguilar0x0/bapp/pkg/assert"
 )
 
 type APIError struct {
@@ -14,13 +16,9 @@ type APIError struct {
 
 func (d *APIError) Error() string {
 	msgRaw, err := json.Marshal(d.Message)
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(err, "marshalling Message", "fault", "Marshal")
 	ecRaw, err := json.Marshal(d.ErrorCause)
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(err, "marshalling ErrorCause", "fault", "Marshal")
 	return fmt.Sprintf("cause=%s status=%d message=%s", string(ecRaw), d.Status, string(msgRaw))
 }
 
