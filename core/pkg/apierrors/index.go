@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/AAguilar0x0/bapp/pkg/assert"
 	"runtime/debug"
+
+	"github.com/AAguilar0x0/bapp/core/pkg/assert"
 )
 
 type APIError struct {

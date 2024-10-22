@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/AAguilar0x0/bapp/cmd/web/types"
-	"github.com/AAguilar0x0/bapp/pkg/apierrors"
+	"github.com/AAguilar0x0/bapp/core/pkg/apierrors"
 	"github.com/labstack/echo/v4"
 )
 

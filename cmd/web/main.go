@@ -11,8 +11,8 @@ import (
 	"github.com/AAguilar0x0/bapp/cmd/web/api"
 	"github.com/AAguilar0x0/bapp/cmd/web/types"
 	"github.com/AAguilar0x0/bapp/core/controllers/user"
+	"github.com/AAguilar0x0/bapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/bapp/core/services"
-	"github.com/AAguilar0x0/bapp/pkg/apierrors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

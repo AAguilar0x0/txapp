@@ -2,12 +2,12 @@ package app
 
 import (
 	"github.com/AAguilar0x0/bapp/core/controllers/user"
+	"github.com/AAguilar0x0/bapp/core/pkg/assert"
 	"github.com/AAguilar0x0/bapp/core/services"
 	authcustom "github.com/AAguilar0x0/bapp/extern/auth/custom"
 	"github.com/AAguilar0x0/bapp/extern/db/psql"
 	"github.com/AAguilar0x0/bapp/extern/env"
 	"github.com/AAguilar0x0/bapp/extern/validator/validatorv10"
-	"github.com/AAguilar0x0/bapp/pkg/assert"
 )
 
 // ==================================================================================== //

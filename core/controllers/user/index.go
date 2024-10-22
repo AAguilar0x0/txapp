@@ -3,9 +3,9 @@ package user
 import (
 	"context"
 
+	"github.com/AAguilar0x0/bapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/bapp/core/services"
 	"github.com/AAguilar0x0/bapp/extern/db/psql"
-	"github.com/AAguilar0x0/bapp/pkg/apierrors"
 )
 
 type User struct {

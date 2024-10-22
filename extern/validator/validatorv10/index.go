@@ -1,8 +1,8 @@
 package validatorv10
 
 import (
+	"github.com/AAguilar0x0/bapp/core/pkg/assert"
 	"github.com/AAguilar0x0/bapp/core/services"
-	"github.com/AAguilar0x0/bapp/pkg/assert"
 	"github.com/go-playground/validator/v10"
 )
 
