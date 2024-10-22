@@ -3,12 +3,15 @@ package psql
 import (
 	"context"
 	"fmt"
+	"os"
 	"runtime"
 	"time"
 
 	psqldal "github.com/AAguilar0x0/bapp/extern/db/psql/dal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 )
 
 type DB struct {
@@ -44,6 +47,16 @@ func New(host, user, password, db, port, sslmode string) (*DB, error) {
 		pool: pool,
 		db:   psqldal.New(pool),
 	}
+
+	sqlDB := stdlib.OpenDBFromPool(pool)
+	goose.SetBaseFS(os.DirFS("./"))
+	if err := goose.SetDialect("pgx"); err != nil {
+		return nil, err
+	}
+	if err := goose.Up(sqlDB, "extern/db/psql/migrations"); err != nil {
+		return nil, err
+	}
+
 	return &dbInstance, nil
 }
 

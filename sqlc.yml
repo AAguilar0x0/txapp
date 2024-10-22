@@ -2,7 +2,7 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "./extern/db/psql/query/"
-    schema: "./extern/db/psql/migrate"
+    schema: "./extern/db/psql/migrations"
     gen:
       go:
         package: "psqldal"
