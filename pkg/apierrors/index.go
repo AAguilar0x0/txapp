@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/AAguilar0x0/bapp/pkg/assert"
+	"runtime/debug"
 )
 
 type APIError struct {
@@ -19,10 +20,10 @@ func (d *APIError) Error() string {
 	assert.NoError(err, "marshalling Message", "fault", "Marshal")
 	ecRaw, err := json.Marshal(d.ErrorCause)
 	assert.NoError(err, "marshalling ErrorCause", "fault", "Marshal")
-	return fmt.Sprintf("cause=%s status=%d message=%s", string(ecRaw), d.Status, string(msgRaw))
+	return fmt.Sprintf("status=%d message=%s error=%s\nstack: %s", d.Status, string(msgRaw), string(ecRaw), string(debug.Stack()))
 }
 
-func new(status int, message string, args []string) *APIError {
+func New(status int, message string, args []string) *APIError {
 	err := APIError{
 		Status:  status,
 		Message: message,
@@ -34,10 +35,14 @@ func new(status int, message string, args []string) *APIError {
 	return &err
 }
 
-func InternalServerError(message string, args ...string) *APIError {
-	return new(http.StatusInternalServerError, message, args)
+func BadRequest(message string, args ...string) *APIError {
+	return New(http.StatusBadRequest, message, args)
 }
 
 func Unauthorized(message string, args ...string) *APIError {
-	return new(http.StatusUnauthorized, message, args)
+	return New(http.StatusUnauthorized, message, args)
+}
+
+func InternalServerError(message string, args ...string) *APIError {
+	return New(http.StatusInternalServerError, message, args)
 }

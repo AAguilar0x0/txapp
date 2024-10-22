@@ -6,6 +6,7 @@ import (
 )
 
 type Handler struct {
-	Env  services.Environment
-	User *user.User
+	Env   services.Environment
+	Vldtr services.Validator
+	User  *user.User
 }

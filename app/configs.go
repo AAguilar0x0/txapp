@@ -6,8 +6,13 @@ import (
 	authcustom "github.com/AAguilar0x0/bapp/extern/auth/custom"
 	"github.com/AAguilar0x0/bapp/extern/db/psql"
 	"github.com/AAguilar0x0/bapp/extern/env"
+	"github.com/AAguilar0x0/bapp/extern/validator/validatorv10"
 	"github.com/AAguilar0x0/bapp/pkg/assert"
 )
+
+// ==================================================================================== //
+// SERVICES
+// ==================================================================================== //
 
 func environment(app *App) {
 	app.Env = env.New()
@@ -46,6 +51,17 @@ func Auth(cb func(auth services.Authenticator)) AppCallback {
 		cb(auth)
 	}
 }
+
+func Validator(cb func(data services.Validator)) AppCallback {
+	return func(app *App) {
+		data := validatorv10.New()
+		cb(data)
+	}
+}
+
+// ==================================================================================== //
+// CONTROLLERS
+// ==================================================================================== //
 
 func UserController(cb func(data *user.User)) AppCallback {
 	return func(app *App) {
