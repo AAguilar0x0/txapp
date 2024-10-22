@@ -17,14 +17,15 @@ type DB struct {
 	tx   pgx.Tx
 }
 
-func New(host, user, password, db, port string) (*DB, error) {
+func New(host, user, password, db, port, sslmode string) (*DB, error) {
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=verify-full",
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		host,
 		user,
 		password,
 		db,
 		port,
+		sslmode,
 	)
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {

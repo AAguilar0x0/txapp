@@ -30,6 +30,7 @@ func Database(cb func(db *psql.DB)) AppCallback {
 			app.Env.CommandLineFlagWithDefault("DB_PASSWORD", "postgres"),
 			app.Env.CommandLineFlagWithDefault("DB_NAME", "postgres"),
 			app.Env.CommandLineFlagWithDefault("DB_PORT", "5432"),
+			app.Env.CommandLineFlagWithDefault("DB_SSLMODE", "disable"),
 		)
 		assert.NoError(err, "psql instantiation", "fault", "New")
 		cb(db)
