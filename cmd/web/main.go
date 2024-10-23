@@ -15,6 +15,14 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+// @title WebApp
+// @version 1.0
+// @description This is the backend api for WebApp.
+
+// @contact.name WebApp
+
+// @host localhost:8080
+// @BasePath /api/v1
 func main() {
 	a := app.New()
 	h := types.Handler{
@@ -37,7 +45,7 @@ func main() {
 	}
 	e.Use(middleware.RemoveTrailingSlash())
 	e.Static("/static", "cmd/web/static")
-	api.Setup(e.Group("/api/v1"), &h)
+	api.New(e.Group("/api/v1"), &h)
 
 	a.CleanUp(func(app *app.App) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

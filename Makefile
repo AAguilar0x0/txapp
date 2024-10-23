@@ -50,9 +50,13 @@ test/cover:
 ## install: install necessary dependencies
 .PHONY: install
 install:
-	go install github.com/swaggo/swag/cmd/swag@latest
 	go mod download
 	go mod verify
+
+## install/swagger: install swagger dependency
+.PHONY: install/swagger
+install/swagger:
+	go install github.com/swaggo/swag/cmd/swag@latest
 
 ## run/live: run the application with reloading on file changes
 .PHONY: run/live
@@ -88,6 +92,11 @@ templ:
 .PHONY: tailwindcss
 tailwindcss:
 	npx tailwindcss -i ./cmd/web/static/input.css -o ./cmd/web/static/output.css --minify
+
+## swagger: generate swagger docs
+.PHONY: swagger
+swagger:
+	(cd ./cmd/web && swag init --parseDependency)
 
 
 # ==================================================================================== #

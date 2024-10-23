@@ -5,9 +5,9 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./bin/web"
-  cmd = "sqlc generate && templ generate && npx tailwindcss -i ./cmd/web/static/input.css -o ./cmd/web/static/output.css --minify && make cmd/web/build"
+  cmd = "(cd ./cmd/web && swag init --parseDependency) && sqlc generate && templ generate && npx tailwindcss -i ./cmd/web/static/input.css -o ./cmd/web/static/output.css --minify && make cmd/web/build"
   delay = 0
-  exclude_dir = ["assets", "tmp", "vendor", "testdata", "cmd/web/static", "extern/db/psql/dal"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "cmd/web/static", "cmd/web/docs", "extern/db/psql/dal"]
   exclude_file = []
   exclude_regex = ["_test.go", ".*_templ.go"]
   exclude_unchanged = false
