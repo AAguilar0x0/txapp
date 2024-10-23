@@ -10,6 +10,8 @@
 /bin
 /tmp
 /.vscode
+/cmd/web/docs/*
+!/cmd/web/docs/placeholder
 
 # Test binary, built with `go test -c`
 *.test
