@@ -14,12 +14,10 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type handler struct {
-	*types.Handler
-}
+type handler types.Handler
 
 func New(e *echo.Group, h *types.Handler) {
-	d := handler{Handler: h}
+	d := (*handler)(h)
 	if env := h.Env.CommandLineFlag("ENV"); env == string(envmodes.Local) || env == string(envmodes.Debug) {
 		swagger.New(e.Group("/swagger"), h)
 	}
@@ -59,15 +57,15 @@ type postSignin struct {
 // @Param body body postSignin true "Body"
 // @Success 200 {object} string "Kani"
 // @Router /auth/signin [post]
-func (h *handler) Signin(c echo.Context) error {
+func (d *handler) Signin(c echo.Context) error {
 	var body postSignin
 	if err := c.Bind(&body); err != nil {
 		return apierrors.BadRequest("Validation error")
 	}
-	if err := h.Vldtr.Struct(&body); err != nil {
+	if err := d.Vldtr.Struct(&body); err != nil {
 		return apierrors.BadRequest("Validation error")
 	}
-	if err := h.User.SignIn(c.Request().Context(), body.Email, body.Password); err != nil {
+	if err := d.User.SignIn(c.Request().Context(), body.Email, body.Password); err != nil {
 		return err
 	}
 	c.String(http.StatusOK, "Kani")

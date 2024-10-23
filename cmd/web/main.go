@@ -7,6 +7,7 @@ import (
 
 	"github.com/AAguilar0x0/bapp/app"
 	"github.com/AAguilar0x0/bapp/cmd/web/api"
+	"github.com/AAguilar0x0/bapp/cmd/web/pages"
 	"github.com/AAguilar0x0/bapp/cmd/web/types"
 	"github.com/AAguilar0x0/bapp/core/controllers/user"
 	"github.com/AAguilar0x0/bapp/core/pkg/apierrors"
@@ -22,7 +23,7 @@ import (
 // @contact.name WebApp
 
 // @host localhost:8080
-// @BasePath /api/v1
+// @BasePath /api
 func main() {
 	a := app.New()
 	h := types.Handler{
@@ -45,7 +46,8 @@ func main() {
 	}
 	e.Use(middleware.RemoveTrailingSlash())
 	e.Static("/static", "cmd/web/static")
-	api.New(e.Group("/api/v1"), &h)
+	pages.New(e.Group(""), &h)
+	api.New(e.Group("/api"), &h)
 
 	a.CleanUp(func(app *app.App) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
