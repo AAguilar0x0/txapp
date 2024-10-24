@@ -5,9 +5,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AAguilar0x0/bapp/core/pkg/assert"
-	"github.com/AAguilar0x0/bapp/core/services"
-	"github.com/AAguilar0x0/bapp/extern/db/psql"
+	"github.com/AAguilar0x0/txapp/core/pkg/assert"
+	"github.com/AAguilar0x0/txapp/core/services"
+	"github.com/AAguilar0x0/txapp/extern/db/psql"
 )
 
 type AppCallback func(app *App)

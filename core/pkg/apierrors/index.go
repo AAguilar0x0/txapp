@@ -7,7 +7,7 @@ import (
 
 	"runtime/debug"
 
-	"github.com/AAguilar0x0/bapp/core/pkg/assert"
+	"github.com/AAguilar0x0/txapp/core/pkg/assert"
 )
 
 type APIError struct {

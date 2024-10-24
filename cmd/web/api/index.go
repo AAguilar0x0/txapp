@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/AAguilar0x0/bapp/cmd/web/api/swagger"
-	"github.com/AAguilar0x0/bapp/cmd/web/types"
-	"github.com/AAguilar0x0/bapp/core/constants/envmodes"
-	"github.com/AAguilar0x0/bapp/core/pkg/apierrors"
+	"github.com/AAguilar0x0/txapp/cmd/web/api/swagger"
+	"github.com/AAguilar0x0/txapp/cmd/web/types"
+	"github.com/AAguilar0x0/txapp/core/constants/envmodes"
+	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

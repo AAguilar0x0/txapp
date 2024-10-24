@@ -1,4 +1,4 @@
-module github.com/AAguilar0x0/bapp
+module github.com/AAguilar0x0/txapp
 
 go 1.22.8
 

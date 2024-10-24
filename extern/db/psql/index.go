@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	psqldal "github.com/AAguilar0x0/bapp/extern/db/psql/dal"
+	psqldal "github.com/AAguilar0x0/txapp/extern/db/psql/dal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
