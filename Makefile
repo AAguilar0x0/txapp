@@ -47,6 +47,15 @@ test/cover:
 	go test -v -race -buildvcs -coverprofile=/tmp/coverage.out ./...
 	go tool cover -html=/tmp/coverage.out
 
+## setup: create a new project using this as template
+.PHONY: setup
+setup:
+	@if [[ ! -f ./setup.sh ]]; then \
+		echo "Setup is already complete. You can delete this setup make target."; \
+	else \
+		chmod 755 ./setup.sh && ./setup.sh && rm ./setup.sh; \
+	fi
+
 
 # ==================================================================================== #
 # DEVELOPMENT
