@@ -108,9 +108,9 @@ swagger:
 cmd/web/build:
 	go build -v -o=${MAIN_PACKAGE_PATH}/web ./cmd/web
 
-## cmd/web/run: run the web application
-.PHONY: cmd/web/run
-cmd/web/run:
+## cmd/web/bin: execute the web application binary
+.PHONY: cmd/web/bin
+cmd/web/bin:
 	${MAIN_PACKAGE_PATH}/web
 
 ## cmd/migrate/run: run the migrate application
