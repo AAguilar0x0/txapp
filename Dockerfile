@@ -3,6 +3,4 @@ RUN ls /opt
 COPY . /opt/
 WORKDIR /opt
 RUN make install
-RUN make cmd/web/build
-ENTRYPOINT make cmd/web/run
-
+CMD make cmd/web/build && make cmd/web/run
