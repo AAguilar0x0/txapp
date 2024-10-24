@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/AAguilar0x0/txapp/app"
@@ -26,7 +27,9 @@ import (
 // @BasePath /api
 func main() {
 	a := app.New()
+	wg := &sync.WaitGroup{}
 	h := types.Handler{
+		Wg:  wg,
 		Env: a.Env,
 	}
 
@@ -50,6 +53,7 @@ func main() {
 	api.New(e.Group("/api"), &h)
 
 	a.CleanUp(func(app *app.App) {
+		wg.Wait()
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := e.Shutdown(ctx); err != nil {
