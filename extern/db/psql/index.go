@@ -2,9 +2,11 @@ package psql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	psqldal "github.com/AAguilar0x0/bapp/extern/db/psql/dal"
@@ -48,16 +50,43 @@ func New(host, user, password, db, port, sslmode string) (*DB, error) {
 		db:   psqldal.New(pool),
 	}
 
-	sqlDB := stdlib.OpenDBFromPool(pool)
-	goose.SetBaseFS(os.DirFS("./"))
-	if err := goose.SetDialect("pgx"); err != nil {
-		return nil, err
-	}
-	if err := goose.Up(sqlDB, "extern/db/psql/migrations"); err != nil {
+	err = dbInstance.Migrate("extern/db/psql/migrations", "up", nil, false)
+	if err != nil {
 		return nil, err
 	}
 
 	return &dbInstance, nil
+}
+
+func (d *DB) Migrate(dir, command string, version *int64, noVersioning bool) error {
+	sqlDB := stdlib.OpenDBFromPool(d.pool)
+	goose.SetBaseFS(os.DirFS("./"))
+	if err := goose.SetDialect("pgx"); err != nil {
+		return err
+	}
+	if strings.HasSuffix(command, "-to") && version == nil {
+		return errors.New("missing version")
+	}
+	var err error
+	options := []goose.OptionsFunc{}
+	if noVersioning {
+		options = append(options, goose.WithNoVersioning())
+	}
+	switch command {
+	case "up":
+		err = goose.Up(sqlDB, dir, options...)
+	case "up-one":
+		err = goose.UpByOne(sqlDB, dir, options...)
+	case "up-to":
+		err = goose.UpTo(sqlDB, dir, *version, options...)
+	case "down":
+		err = goose.Down(sqlDB, dir, options...)
+	case "down-to":
+		err = goose.DownTo(sqlDB, dir, *version, options...)
+	default:
+		return errors.New("missing or unknown migration command")
+	}
+	return err
 }
 
 func (d *DB) Close() {

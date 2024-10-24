@@ -3,4 +3,5 @@ RUN ls /opt
 COPY . /opt/
 WORKDIR /opt
 RUN make install
-CMD make cmd/web/build && make cmd/web/run
+RUN make cmd/web/build
+CMD ["make", "cmd/web/run"]

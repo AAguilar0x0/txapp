@@ -113,3 +113,7 @@ cmd/web/build:
 cmd/web/run:
 	${MAIN_PACKAGE_PATH}/web
 
+## cmd/migrate/run: run the migrate application
+.PHONY: cmd/migrate/run
+cmd/migrate/run:
+	go run ./cmd/migrate/main.go

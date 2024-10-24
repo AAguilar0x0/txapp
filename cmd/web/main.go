@@ -63,7 +63,7 @@ func main() {
 		h.User = data
 	}))
 
-	a.Run(func() {
+	a.Run(func(env services.Environment) {
 		if err := e.Start(":" + port); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}

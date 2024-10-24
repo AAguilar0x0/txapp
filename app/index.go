@@ -41,12 +41,12 @@ func (d *App) CleanUp(cleanups ...AppCallback) *App {
 	return d
 }
 
-func (d *App) Run(cb func()) {
+func (d *App) Run(cb func(env services.Environment)) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan bool, 1)
 	go func() {
-		cb()
+		cb(d.Env)
 		done <- true
 	}()
 	select {
