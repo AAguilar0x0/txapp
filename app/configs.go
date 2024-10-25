@@ -15,48 +15,33 @@ import (
 // ==================================================================================== //
 
 func environment(app *App) {
-	app.Env = env.New()
+	app.env = env.New()
 }
 
 func Database(cb func(db *psql.DB)) AppCallback {
 	return func(app *App) {
-		if temp := app.services.db; temp != nil {
-			cb(temp)
-			return
-		}
-		db, err := psql.New(
-			app.Env.CommandLineFlagWithDefault("DB_HOST", "localhost"),
-			app.Env.CommandLineFlagWithDefault("DB_USER", "postgres"),
-			app.Env.CommandLineFlagWithDefault("DB_PASSWORD", "postgres"),
-			app.Env.CommandLineFlagWithDefault("DB_NAME", "postgres"),
-			app.Env.CommandLineFlagWithDefault("DB_PORT", "5432"),
-			app.Env.CommandLineFlagWithDefault("DB_SSLMODE", "disable"),
-		)
-		assert.NoError(err, "psql instantiation", "fault", "New")
-		cb(db)
-		app.CleanUp(func(app *App) {
-			db.Close()
-		})
+		db := psql.DB{}
+		err := app.registerResource(&db)
+		assert.NoError(err, "psql instantiation", "fault", "registerResource")
+		cb(&db)
 	}
 }
 
 func Auth(cb func(auth services.Authenticator)) AppCallback {
 	return func(app *App) {
-		if temp := app.services.auth; temp != nil {
-			cb(temp)
-			return
-		}
-		appSecret := app.Env.CommandLineFlagPanics("AUTH_SECRET")
-		auth, err := authcustom.New([]byte(appSecret))
-		assert.NoError(err, "authcustom instantiation", "fault", "New")
-		cb(auth)
+		auth := authcustom.Auth{}
+		err := app.registerResource(&auth)
+		assert.NoError(err, "authcustom instantiation", "fault", "registerResource")
+		cb(&auth)
 	}
 }
 
 func Validator(cb func(data services.Validator)) AppCallback {
 	return func(app *App) {
-		data := validatorv10.New()
-		cb(data)
+		validator := validatorv10.ValidatorV10{}
+		err := app.registerResource(&validator)
+		assert.NoError(err, "validatorv10 instantiation", "fault", "registerResource")
+		cb(&validator)
 	}
 }
 
@@ -66,17 +51,17 @@ func Validator(cb func(data services.Validator)) AppCallback {
 
 func UserController(cb func(data *user.User)) AppCallback {
 	return func(app *App) {
-		if app.services.db == nil {
+		var lDB *psql.DB
+		var lAuth services.Authenticator
+		app.config(
 			Database(func(db *psql.DB) {
-				app.services.db = db
-			})(app)
-		}
-		if app.services.auth == nil {
+				lDB = db
+			}),
 			Auth(func(auth services.Authenticator) {
-				app.services.auth = auth
-			})(app)
-		}
-		temp, err := user.New(app.services.db, app.services.auth)
+				lAuth = auth
+			}),
+		)
+		temp, err := user.New(lDB, lAuth)
 		assert.NoError(err, "user instantiation", "fault", "New")
 		cb(temp)
 	}

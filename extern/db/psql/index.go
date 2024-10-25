@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AAguilar0x0/txapp/core/services"
 	psqldal "github.com/AAguilar0x0/txapp/extern/db/psql/dal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,24 +18,28 @@ import (
 )
 
 type DB struct {
+	init bool
 	pool *pgxpool.Pool
 	db   *psqldal.Queries
 	tx   pgx.Tx
 }
 
-func New(host, user, password, db, port, sslmode string) (*DB, error) {
+func (d *DB) Init(env services.Environment) error {
+	if d.init {
+		return nil
+	}
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		host,
-		user,
-		password,
-		db,
-		port,
-		sslmode,
+		env.GetDefault("DB_HOST", "localhost"),
+		env.GetDefault("DB_USER", "postgres"),
+		env.GetDefault("DB_PASSWORD", "postgres"),
+		env.GetDefault("DB_NAME", "postgres"),
+		env.GetDefault("DB_PORT", "5432"),
+		env.GetDefault("DB_SSLMODE", "disable"),
 	)
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	config.MaxConns = int32(max(runtime.NumCPU(), 4))
 	config.MinConns = 1
@@ -43,19 +48,23 @@ func New(host, user, password, db, port, sslmode string) (*DB, error) {
 	config.HealthCheckPeriod = time.Minute
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	dbInstance := DB{
-		pool: pool,
-		db:   psqldal.New(pool),
-	}
+	d.pool = pool
+	d.db = psqldal.New(pool)
 
-	err = dbInstance.Migrate("extern/db/psql/migrations", "up", nil, false)
+	err = d.Migrate("extern/db/psql/migrations", "up", nil, false)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &dbInstance, nil
+	d.init = true
+
+	return nil
+}
+
+func (d *DB) Close() {
+	d.pool.Close()
 }
 
 func (d *DB) Migrate(dir, command string, version *int64, noVersioning bool) error {
@@ -87,10 +96,6 @@ func (d *DB) Migrate(dir, command string, version *int64, noVersioning bool) err
 		return errors.New("missing or unknown migration command")
 	}
 	return err
-}
-
-func (d *DB) Close() {
-	d.pool.Close()
 }
 
 func (d *DB) Instance() *psqldal.Queries {

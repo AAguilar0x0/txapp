@@ -7,53 +7,54 @@ import (
 
 	"github.com/AAguilar0x0/txapp/core/pkg/assert"
 	"github.com/AAguilar0x0/txapp/core/services"
-	"github.com/AAguilar0x0/txapp/extern/db/psql"
 )
 
 type AppCallback func(app *App)
 
 type App struct {
-	Env      services.Environment
-	services struct {
-		db   *psql.DB
-		auth services.Authenticator
-	}
-	cleanupCB []AppCallback
+	env       services.Environment
+	cleanupCB []func()
 }
 
 func New() *App {
 	d := App{}
-	d.Config(environment)
-	assert.Assert(d.Env != nil, "unexpected Env nil value", "fault", "App.Env")
+	d.config(environment)
+	assert.Assert(d.env != nil, "unexpected Env nil value", "fault", "App.Env")
 	return &d
 }
 
-func (d *App) Config(configs ...AppCallback) *App {
+func (d *App) registerResource(res Resource) error {
+	if err := res.Init(d.env); err != nil {
+		return err
+	}
+	d.cleanupCB = append(d.cleanupCB, res.Close)
+	return nil
+}
+
+func (d *App) config(configs ...AppCallback) {
 	for _, conf := range configs {
 		conf(d)
 	}
-	return d
 }
 
-func (d *App) CleanUp(cleanups ...AppCallback) *App {
-	assert.Assert(d.Env != nil, "unexpected Env nil value", "fault", "App.Env")
-	d.cleanupCB = append(d.cleanupCB, cleanups...)
-	return d
-}
-
-func (d *App) Run(cb func(env services.Environment)) {
+func (d *App) Start(data Lifecycle) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan bool, 1)
+
+	data.Init(d.env, d.config)
+
 	go func() {
-		cb(d.Env)
+		data.Run()
 		done <- true
 	}()
 	select {
 	case <-sigCh:
 	case <-done:
 	}
+
+	data.Close()
 	for _, cb := range d.cleanupCB {
-		cb(d)
+		cb()
 	}
 }

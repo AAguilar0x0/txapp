@@ -8,8 +8,8 @@ import (
 )
 
 type Handler struct {
+	Env   string
 	Wg    *sync.WaitGroup
-	Env   services.Environment
 	Vldtr services.Validator
 	User  *user.User
 }

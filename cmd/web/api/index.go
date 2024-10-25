@@ -18,7 +18,7 @@ type handler types.Handler
 
 func New(e *echo.Group, h *types.Handler) {
 	d := (*handler)(h)
-	if env := h.Env.CommandLineFlag("ENV"); env == string(envmodes.Local) || env == string(envmodes.Debug) {
+	if h.Env == string(envmodes.Local) || h.Env == string(envmodes.Debug) {
 		swagger.New(e.Group("/swagger"), h)
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))

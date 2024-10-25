@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,18 +19,25 @@ type Claims struct {
 }
 
 type Auth struct {
+	init bool
 	pkey crypto.PublicKey
 	skey crypto.PrivateKey
 }
 
-func New(privateKey []byte) (*Auth, error) {
-	auth := Auth{}
-	err := auth.parseKeyPairEdPrivateKeyFromPEM(privateKey)
-	if err != nil {
-		return nil, err
+func (d *Auth) Init(env services.Environment) error {
+	if d.init {
+		return nil
 	}
-	return &auth, nil
+	appSecret := env.MustGet("AUTH_SECRET")
+	err := d.parseKeyPairEdPrivateKeyFromPEM([]byte(appSecret))
+	if err != nil {
+		return err
+	}
+	d.init = true
+	return nil
 }
+
+func (*Auth) Close() {}
 
 func (d *Auth) Hash(input string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(input), 15)

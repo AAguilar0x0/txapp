@@ -26,7 +26,7 @@ func New() *Env {
 	return &Env{}
 }
 
-func (*Env) PanicIfMissingEnvKey(key ...string) {
+func (*Env) MustPresent(key ...string) {
 	for _, k := range key {
 		if !viper.IsSet(k) {
 			log.Fatalf("Environment variable %s not set", k)
@@ -34,7 +34,12 @@ func (*Env) PanicIfMissingEnvKey(key ...string) {
 	}
 }
 
-func (*Env) CommandLineFlag(key string) string {
+func (d *Env) MustGet(key string) string {
+	d.MustPresent(key)
+	return d.Get(key)
+}
+
+func (*Env) Get(key string) string {
 	function := viper.GetString(key)
 	flag.Visit(func(f *flag.Flag) {
 		if strings.EqualFold(f.Name, key) {
@@ -44,15 +49,10 @@ func (*Env) CommandLineFlag(key string) string {
 	return function
 }
 
-func (d *Env) CommandLineFlagWithDefault(key string, defaultValue string) string {
-	val := d.CommandLineFlag(key)
+func (d *Env) GetDefault(key string, defaultValue string) string {
+	val := d.Get(key)
 	if val == "" {
 		val = defaultValue
 	}
 	return val
-}
-
-func (d *Env) CommandLineFlagPanics(key string) string {
-	d.PanicIfMissingEnvKey(key)
-	return d.CommandLineFlag(key)
 }

@@ -17,25 +17,32 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// @title WebApp
-// @version 1.0
-// @description This is the backend api for WebApp.
+type Web struct {
+	wg   *sync.WaitGroup
+	e    *echo.Echo
+	port string
+}
 
-// @contact.name WebApp
-
-// @host localhost:8080
-// @BasePath /api
-func main() {
-	a := app.New()
-	wg := &sync.WaitGroup{}
-	h := types.Handler{
-		Wg:  wg,
-		Env: a.Env,
+func (d *Web) Init(env services.Environment, config func(configs ...app.AppCallback)) {
+	d.wg = &sync.WaitGroup{}
+	h := &types.Handler{
+		Env: env.Get("ENV"),
+		Wg:  d.wg,
 	}
 
-	port := a.Env.CommandLineFlagWithDefault("PORT", "8080")
-	e := echo.New()
-	e.HTTPErrorHandler = func(err error, c echo.Context) {
+	config(
+		app.Validator(func(data services.Validator) {
+			h.Vldtr = data
+		}),
+		app.UserController(func(data *user.User) {
+			h.User = data
+		}),
+	)
+
+	d.port = env.GetDefault("PORT", "8080")
+	d.e = echo.New()
+
+	d.e.HTTPErrorHandler = func(err error, c echo.Context) {
 		code := http.StatusInternalServerError
 		msg := http.StatusText(code)
 		switch v := err.(type) {
@@ -47,29 +54,36 @@ func main() {
 		}
 		c.String(code, msg)
 	}
-	e.Use(middleware.RemoveTrailingSlash())
-	e.Static("/static", "cmd/web/static")
-	pages.New(e.Group(""), &h)
-	api.New(e.Group("/api"), &h)
+	d.e.Use(middleware.RemoveTrailingSlash())
+	d.e.Static("/static", "cmd/web/static")
+	pages.New(d.e.Group(""), h)
+	api.New(d.e.Group("/api"), h)
+}
 
-	a.CleanUp(func(app *app.App) {
-		wg.Wait()
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if err := e.Shutdown(ctx); err != nil {
-			e.Logger.Fatal(err)
-		}
-	})
-	a.Config(app.Validator(func(data services.Validator) {
-		h.Vldtr = data
-	}))
-	a.Config(app.UserController(func(data *user.User) {
-		h.User = data
-	}))
+func (d *Web) Run() {
+	if err := d.e.Start(":" + d.port); err != nil && err != http.ErrServerClosed {
+		d.e.Logger.Fatal("shutting down the server")
+	}
+}
 
-	a.Run(func(env services.Environment) {
-		if err := e.Start(":" + port); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("shutting down the server")
-		}
-	})
+func (d *Web) Close() {
+	d.wg.Wait()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := d.e.Shutdown(ctx); err != nil {
+		d.e.Logger.Fatal(err)
+	}
+}
+
+// @title WebApp
+// @version 1.0
+// @description This is the backend api for WebApp.
+
+// @contact.name WebApp
+
+// @host localhost:8080
+// @BasePath /api
+func main() {
+	a := app.New()
+	a.Start(&Web{})
 }

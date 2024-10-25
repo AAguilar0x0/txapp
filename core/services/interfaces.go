@@ -15,8 +15,8 @@ type Authenticator interface {
 }
 
 type Environment interface {
-	PanicIfMissingEnvKey(key ...string)
-	CommandLineFlag(key string) string
-	CommandLineFlagWithDefault(key string, defaultValue string) string
-	CommandLineFlagPanics(key string) string
+	MustPresent(key ...string)
+	MustGet(key string) string
+	Get(key string) string
+	GetDefault(key string, defaultValue string) string
 }
