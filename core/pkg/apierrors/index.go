@@ -40,6 +40,10 @@ func BadRequest(message string, args ...string) *APIError {
 	return New(http.StatusBadRequest, message, args)
 }
 
+func NotFound(message string, args ...string) *APIError {
+	return New(http.StatusNotFound, message, args)
+}
+
 func Unauthorized(message string, args ...string) *APIError {
 	return New(http.StatusUnauthorized, message, args)
 }
