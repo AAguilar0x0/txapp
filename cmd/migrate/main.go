@@ -14,7 +14,7 @@ type Migrate struct {
 	dir     string
 	command string
 	version *int64
-	db      *psql.DB
+	db      *psql.Queries
 }
 
 func (d *Migrate) Init(env services.Environment, config func(configs ...app.AppCallback)) {
@@ -34,7 +34,7 @@ func (d *Migrate) Init(env services.Environment, config func(configs ...app.AppC
 	d.command = command
 	d.version = version
 	config(
-		app.Database(func(db *psql.DB) {
+		app.Database(func(db *psql.Queries) {
 			d.db = db
 		}),
 	)

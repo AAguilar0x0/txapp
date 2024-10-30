@@ -10,22 +10,14 @@ import (
 	"time"
 
 	"github.com/AAguilar0x0/txapp/core/services"
-	psqldal "github.com/AAguilar0x0/txapp/extern/db/psql/dal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
 
-type DB struct {
-	init bool
-	pool *pgxpool.Pool
-	db   *psqldal.Queries
-	tx   pgx.Tx
-}
-
-func (d *DB) Init(env services.Environment) error {
-	if d.init {
+func (d *Queries) Init(env services.Environment) error {
+	if d.db != nil {
 		return nil
 	}
 	dsn := fmt.Sprintf(
@@ -50,25 +42,22 @@ func (d *DB) Init(env services.Environment) error {
 	if err != nil {
 		return err
 	}
-	d.pool = pool
-	d.db = psqldal.New(pool)
+	d.db = pool
 
 	err = d.Migrate("extern/db/psql/migrations", "up", nil, false)
 	if err != nil {
 		return err
 	}
 
-	d.init = true
-
 	return nil
 }
 
-func (d *DB) Close() {
-	d.pool.Close()
+func (d *Queries) Close() {
+	d.db.(*pgxpool.Pool).Close()
 }
 
-func (d *DB) Migrate(dir, command string, version *int64, noVersioning bool) error {
-	sqlDB := stdlib.OpenDBFromPool(d.pool)
+func (d *Queries) Migrate(dir, command string, version *int64, noVersioning bool) error {
+	sqlDB := stdlib.OpenDBFromPool(d.db.(*pgxpool.Pool))
 	goose.SetBaseFS(os.DirFS("./"))
 	if err := goose.SetDialect("pgx"); err != nil {
 		return err
@@ -98,34 +87,30 @@ func (d *DB) Migrate(dir, command string, version *int64, noVersioning bool) err
 	return err
 }
 
-func (d *DB) Instance() *psqldal.Queries {
-	return d.db
-}
-
-func (d *DB) Begin(ctx context.Context) (*DB, error) {
-	if d.tx != nil {
+func (d *Queries) Begin(ctx context.Context) (*Queries, error) {
+	val, ok := d.db.(*pgxpool.Pool)
+	if d.db != nil && !ok {
 		return d, nil
 	}
-	tx, err := d.pool.Begin(ctx)
+	tx, err := val.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &DB{
-		tx: tx,
-		db: d.db.WithTx(tx),
-	}, nil
+	return New(tx), nil
 }
 
-func (d *DB) Rollback(ctx context.Context) error {
-	if d.tx == nil {
+func (d *Queries) Rollback(ctx context.Context) error {
+	tx, ok := d.db.(pgx.Tx)
+	if tx == nil || !ok {
 		return nil
 	}
-	return d.tx.Rollback(ctx)
+	return tx.Rollback(ctx)
 }
 
-func (d *DB) Commit(ctx context.Context) error {
-	if d.tx == nil {
+func (d *Queries) Commit(ctx context.Context) error {
+	tx, ok := d.db.(pgx.Tx)
+	if tx == nil || !ok {
 		return nil
 	}
-	return d.tx.Commit(ctx)
+	return tx.Commit(ctx)
 }

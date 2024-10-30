@@ -5,8 +5,8 @@ sql:
     schema: "./extern/db/psql/migrations"
     gen:
       go:
-        package: "psqldal"
-        out: "./extern/db/psql/dal"
+        package: "psql"
+        out: "./extern/db/psql"
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_pointers_for_null_types: true

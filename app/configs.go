@@ -18,9 +18,9 @@ func environment(app *App) {
 	app.env = env.New()
 }
 
-func Database(cb func(db *psql.DB)) AppCallback {
+func Database(cb func(db *psql.Queries)) AppCallback {
 	return func(app *App) {
-		db := psql.DB{}
+		db := psql.Queries{}
 		err := app.registerResource(&db)
 		assert.NoError(err, "psql instantiation", "fault", "registerResource")
 		cb(&db)
@@ -51,10 +51,10 @@ func Validator(cb func(data services.Validator)) AppCallback {
 
 func UserController(cb func(data *user.User)) AppCallback {
 	return func(app *App) {
-		var lDB *psql.DB
+		var lDB *psql.Queries
 		var lAuth services.Authenticator
 		app.config(
-			Database(func(db *psql.DB) {
+			Database(func(db *psql.Queries) {
 				lDB = db
 			}),
 			Auth(func(auth services.Authenticator) {

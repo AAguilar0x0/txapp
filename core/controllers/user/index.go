@@ -9,11 +9,11 @@ import (
 )
 
 type User struct {
-	db   *psql.DB
+	db   *psql.Queries
 	auth services.Authenticator
 }
 
-func New(db *psql.DB, auth services.Authenticator) (*User, error) {
+func New(db *psql.Queries, auth services.Authenticator) (*User, error) {
 	user := User{
 		db,
 		auth,
@@ -22,7 +22,7 @@ func New(db *psql.DB, auth services.Authenticator) (*User, error) {
 }
 
 func (d *User) SignIn(ctx context.Context, email, password string) error {
-	user, err := d.db.Instance().GetUserForAuth(ctx, email)
+	user, err := d.db.GetUserForAuth(ctx, email)
 	if err != nil {
 		return apierrors.InternalServerError("Error getting user", err.Error())
 	}

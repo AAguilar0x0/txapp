@@ -3,7 +3,7 @@
 //   sqlc v1.25.0
 // source: user.sql
 
-package psqldal
+package psql
 
 import (
 	"context"
