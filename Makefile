@@ -52,6 +52,10 @@ test/cover:
 # DEVELOPMENT
 # ==================================================================================== #
 
+## setup: install and configure necessary dependencies for development
+.PHONY: setup
+setup: install install/swagger git/hooks
+
 ## install: install necessary dependencies
 .PHONY: install
 install:
