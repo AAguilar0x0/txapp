@@ -3,6 +3,7 @@ sql:
   - engine: "postgresql"
     queries: "./extern/db/psql/query/"
     schema: "./extern/db/psql/migrations"
+    strict_function_checks: true
     gen:
       go:
         package: "psql"
@@ -11,6 +12,8 @@ sql:
         emit_json_tags: true
         emit_pointers_for_null_types: true
         emit_enum_valid_method: true
+        emit_empty_slices: true
+        query_parameter_limit: 10
         overrides:
           - db_type: "timestamptz"
             go_type:
