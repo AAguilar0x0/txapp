@@ -172,6 +172,9 @@ func extractFuncReturns(funcType *ast.FuncType) string {
 	var returns []string
 	for _, result := range funcType.Results.List {
 		returnType := getFieldType(result.Type)
+		if returnType == "error" {
+			returnType = "*apierrors.APIError"
+		}
 		returns = append(returns, returnType)
 	}
 
@@ -237,6 +240,7 @@ const interfaceTemplate = `package models
 
 import (
 	"context"
+	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 )
 {{range .}}
 type {{.Name}} interface {
