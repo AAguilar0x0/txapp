@@ -43,7 +43,7 @@ type MethodInfo struct {
 type GeneratorConfig struct {
 	SourcePath      string
 	DestinationPath string
-	Template        string
+	Template        *template.Template
 }
 
 func generateStructs(config GeneratorConfig) {
@@ -64,14 +64,13 @@ func generateStructs(config GeneratorConfig) {
 	})
 
 	if len(types) > 0 {
-		tmpl := template.Must(template.New("model").Parse(config.Template))
 		file, err := os.Create(config.DestinationPath)
 		if err != nil {
 			panic(err)
 		}
 		defer file.Close()
 
-		err = tmpl.Execute(file, types)
+		err = config.Template.Execute(file, types)
 		if err != nil {
 			panic(err)
 		}
@@ -96,14 +95,13 @@ func generateInterfaces(config GeneratorConfig) {
 	})
 
 	if len(interfaces) > 0 {
-		tmpl := template.Must(template.New("interface").Parse(config.Template))
 		file, err := os.Create(config.DestinationPath)
 		if err != nil {
 			panic(err)
 		}
 		defer file.Close()
 
-		err = tmpl.Execute(file, interfaces)
+		err = config.Template.Execute(file, interfaces)
 		if err != nil {
 			panic(err)
 		}
@@ -254,6 +252,9 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
+	model := template.Must(template.New("model").Parse(baseModelTemplate))
+	query := template.Must(template.New("query").Parse(queryModelTemplate))
+	intrfc := template.Must(template.New("interface").Parse(interfaceTemplate))
 
 	wg.Add(1)
 	go func() {
@@ -261,7 +262,7 @@ func main() {
 		generateStructs(GeneratorConfig{
 			SourcePath:      filepath.Join(SOURCE, "models.go"),
 			DestinationPath: filepath.Join(DESTINATION, "models.go"),
-			Template:        baseModelTemplate,
+			Template:        model,
 		})
 	}()
 
@@ -277,7 +278,7 @@ func main() {
 			generateStructs(GeneratorConfig{
 				SourcePath:      file,
 				DestinationPath: filepath.Join(DESTINATION, baseName),
-				Template:        queryModelTemplate,
+				Template:        query,
 			})
 		}()
 	}
@@ -288,7 +289,7 @@ func main() {
 		generateInterfaces(GeneratorConfig{
 			SourcePath:      filepath.Join(SOURCE, "querier.go"),
 			DestinationPath: filepath.Join(DESTINATION, "interfaces.go"),
-			Template:        interfaceTemplate,
+			Template:        intrfc,
 		})
 	}()
 
