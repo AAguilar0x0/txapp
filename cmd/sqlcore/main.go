@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"text/template"
 )
 
@@ -252,29 +253,44 @@ func main() {
 		panic(err)
 	}
 
-	generateStructs(GeneratorConfig{
-		SourcePath:      filepath.Join(SOURCE, "models.go"),
-		DestinationPath: filepath.Join(DESTINATION, "models.go"),
-		Template:        baseModelTemplate,
-	})
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		generateStructs(GeneratorConfig{
+			SourcePath:      filepath.Join(SOURCE, "models.go"),
+			DestinationPath: filepath.Join(DESTINATION, "models.go"),
+			Template:        baseModelTemplate,
+		})
+	}()
 
 	files, err := filepath.Glob(SOURCE + "/*.sql.go")
 	if err != nil {
 		panic(err)
 	}
 	for _, file := range files {
-		baseName := filepath.Base(file)
-
-		generateStructs(GeneratorConfig{
-			SourcePath:      file,
-			DestinationPath: filepath.Join(DESTINATION, baseName),
-			Template:        queryModelTemplate,
-		})
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			baseName := filepath.Base(file)
+			generateStructs(GeneratorConfig{
+				SourcePath:      file,
+				DestinationPath: filepath.Join(DESTINATION, baseName),
+				Template:        queryModelTemplate,
+			})
+		}()
 	}
 
-	generateInterfaces(GeneratorConfig{
-		SourcePath:      filepath.Join(SOURCE, "querier.go"),
-		DestinationPath: filepath.Join(DESTINATION, "interfaces.go"),
-		Template:        interfaceTemplate,
-	})
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		generateInterfaces(GeneratorConfig{
+			SourcePath:      filepath.Join(SOURCE, "querier.go"),
+			DestinationPath: filepath.Join(DESTINATION, "interfaces.go"),
+			Template:        interfaceTemplate,
+		})
+	}()
+
+	wg.Wait()
 }
