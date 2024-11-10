@@ -17,11 +17,20 @@ type APIError struct {
 }
 
 func (d *APIError) Error() string {
+	format := "status=%d message=%s"
 	msgRaw, err := json.Marshal(d.Message)
 	assert.NoError(err, "marshalling Message", "fault", "Marshal")
-	ecRaw, err := json.Marshal(d.ErrorCause)
-	assert.NoError(err, "marshalling ErrorCause", "fault", "Marshal")
-	return fmt.Sprintf("status=%d message=%s error=%s\nstack: %s", d.Status, string(msgRaw), string(ecRaw), string(debug.Stack()))
+	datas := []interface{}{
+		d.Status,
+		string(msgRaw),
+	}
+	if d.ErrorCause != "" {
+		ecRaw, err := json.Marshal(d.ErrorCause)
+		assert.NoError(err, "marshalling ErrorCause", "fault", "Marshal")
+		format += " error=%s\nstack: %s"
+		datas = append(datas, string(ecRaw), string(debug.Stack()))
+	}
+	return fmt.Sprintf(format, datas...)
 }
 
 func New(status int, message string, args []string) *APIError {
