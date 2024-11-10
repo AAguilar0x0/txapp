@@ -17,7 +17,7 @@ type Migrate struct {
 	db      *psql.Queries
 }
 
-func (d *Migrate) Init(env services.Environment, config func(configs ...app.AppCallback)) {
+func New(env services.Environment, config func(configs ...app.AppCallback)) app.Lifecycle {
 	dir := env.GetDefault("dir", "cmd/migrate/migrations")
 	command := env.GetDefault("command", "up")
 	versionStr := env.Get("version")
@@ -30,14 +30,18 @@ func (d *Migrate) Init(env services.Environment, config func(configs ...app.AppC
 		temp := int64(ver)
 		version = &temp
 	}
-	d.dir = dir
-	d.command = command
-	d.version = version
+	d := Migrate{
+		dir:     dir,
+		command: command,
+		version: version,
+	}
 	config(
 		app.Database(func(db *psql.Queries) {
 			d.db = db
 		}),
 	)
+
+	return &d
 }
 
 func (d *Migrate) Run() {
@@ -50,5 +54,5 @@ func (d *Migrate) Close() {}
 
 func main() {
 	a := app.New()
-	a.Start(&Migrate{})
+	a.Start(New)
 }

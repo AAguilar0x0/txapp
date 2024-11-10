@@ -34,12 +34,12 @@ func (d *App) config(configs ...AppCallback) {
 	}
 }
 
-func (d *App) Start(data Lifecycle) {
+func (d *App) Start(init Initializer) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan bool, 1)
 
-	data.Init(d.env, d.config)
+	data := init(d.env, d.config)
 
 	go func() {
 		data.Run()

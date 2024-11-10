@@ -23,8 +23,10 @@ type Web struct {
 	port string
 }
 
-func (d *Web) Init(env services.Environment, config func(configs ...app.AppCallback)) {
-	d.wg = &sync.WaitGroup{}
+func New(env services.Environment, config func(configs ...app.AppCallback)) app.Lifecycle {
+	d := Web{
+		wg: &sync.WaitGroup{},
+	}
 	h := &types.Handler{
 		Env: env.Get("ENV"),
 		Wg:  d.wg,
@@ -58,6 +60,8 @@ func (d *Web) Init(env services.Environment, config func(configs ...app.AppCallb
 	d.e.Static("/static", "cmd/web/static")
 	pages.New(d.e.Group(""), h)
 	api.New(d.e.Group("/api"), h)
+
+	return &d
 }
 
 func (d *Web) Run() {
@@ -85,5 +89,5 @@ func (d *Web) Close() {
 // @BasePath /api
 func main() {
 	a := app.New()
-	a.Start(&Web{})
+	a.Start(New)
 }
