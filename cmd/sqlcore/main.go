@@ -43,7 +43,6 @@ type GeneratorConfig struct {
 	SourcePath      string
 	DestinationPath string
 	Template        string
-	PackageName     string
 }
 
 func generateStructs(config GeneratorConfig) {
@@ -71,13 +70,7 @@ func generateStructs(config GeneratorConfig) {
 		}
 		defer file.Close()
 
-		err = tmpl.Execute(file, struct {
-			Package string
-			Types   []TypeInfo
-		}{
-			Package: config.PackageName,
-			Types:   types,
-		})
+		err = tmpl.Execute(file, types)
 		if err != nil {
 			panic(err)
 		}
@@ -109,13 +102,7 @@ func generateInterfaces(config GeneratorConfig) {
 		}
 		defer file.Close()
 
-		err = tmpl.Execute(file, struct {
-			Package    string
-			Interfaces []InterfaceInfo
-		}{
-			Package:    config.PackageName,
-			Interfaces: interfaces,
-		})
+		err = tmpl.Execute(file, interfaces)
 		if err != nil {
 			panic(err)
 		}
@@ -230,7 +217,7 @@ const baseModelTemplate = `package models
 import (
 	"time"
 )
-{{range .Types}}
+{{range .}}
 type {{.Name}} struct {
   {{- range .Fields}}
   {{.Name}} {{.Type}} ` + "`{{.JSONTag}}`" + `
@@ -239,7 +226,7 @@ type {{.Name}} struct {
 {{end}}`
 
 const queryModelTemplate = `package models
-{{range .Types}}
+{{range .}}
 type {{.Name}} struct {
   {{- range .Fields}}
   {{.Name}} {{.Type}} ` + "`{{.JSONTag}}`" + `
@@ -252,7 +239,7 @@ const interfaceTemplate = `package models
 import (
 	"context"
 )
-{{range .Interfaces}}
+{{range .}}
 type {{.Name}} interface {
 	{{- range .Methods}}
 	{{.Name}}({{.Params}}) {{.Returns}}
@@ -269,7 +256,6 @@ func main() {
 		SourcePath:      filepath.Join(SOURCE, "models.go"),
 		DestinationPath: filepath.Join(DESTINATION, "models.go"),
 		Template:        baseModelTemplate,
-		PackageName:     "models",
 	})
 
 	files, err := filepath.Glob(SOURCE + "/*.sql.go")
@@ -278,13 +264,11 @@ func main() {
 	}
 	for _, file := range files {
 		baseName := filepath.Base(file)
-		packageName := strings.TrimSuffix(baseName, ".sql.go")
 
 		generateStructs(GeneratorConfig{
 			SourcePath:      file,
 			DestinationPath: filepath.Join(DESTINATION, baseName),
 			Template:        queryModelTemplate,
-			PackageName:     packageName,
 		})
 	}
 
@@ -292,6 +276,5 @@ func main() {
 		SourcePath:      filepath.Join(SOURCE, "querier.go"),
 		DestinationPath: filepath.Join(DESTINATION, "interfaces.go"),
 		Template:        interfaceTemplate,
-		PackageName:     "models",
 	})
 }
