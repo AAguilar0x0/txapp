@@ -20,3 +20,7 @@ type Environment interface {
 	Get(key string) string
 	GetDefault(key string, defaultValue string) string
 }
+
+type IDGenerator interface {
+	Generate() (string, error)
+}

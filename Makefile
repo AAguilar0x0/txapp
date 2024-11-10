@@ -126,3 +126,8 @@ cmd/web/bin:
 .PHONY: cmd/migrate/run
 cmd/migrate/run:
 	go run ./cmd/migrate/main.go
+
+## cmd/sqlcore/run: run the sqlc to core codegen
+.PHONY: cmd/sqlcore/run
+cmd/sqlcore/run:
+	go run ./cmd/sqlcore/main.go

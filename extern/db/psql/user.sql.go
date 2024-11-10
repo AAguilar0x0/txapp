@@ -7,8 +7,6 @@ package psql
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -47,9 +45,9 @@ SELECT users.id, users.password, users.role FROM users WHERE email = $1
 `
 
 type GetUserForAuthRow struct {
-	ID       pgtype.UUID `json:"id"`
-	Password string      `json:"password"`
-	Role     string      `json:"role"`
+	ID       string `json:"id"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 func (q *Queries) GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, error) {

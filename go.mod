@@ -9,6 +9,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/pressly/goose/v3 v3.22.1
+	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.4

@@ -6,23 +6,20 @@ import (
 )
 
 type ValidatorV10 struct {
-	init      bool
 	Validator *validator.Validate
 }
 
-func (d *ValidatorV10) Init(env services.Environment) error {
-	if d.init {
-		return nil
-	}
-	d.Validator = validator.New()
+func New(env services.Environment) (*ValidatorV10, error) {
+	d := ValidatorV10{validator.New()}
 	err := d.Validator.RegisterValidation("enum_validation", func(fl validator.FieldLevel) bool {
 		return fl.Field().Interface().(services.EnumValidator).ValidateEnum()
 	})
-	d.init = true
-	return err
+	return &d, err
 }
 
-func (*ValidatorV10) Close() {}
+func (*ValidatorV10) Close() error {
+	return nil
+}
 
 func (d *ValidatorV10) Struct(s interface{}) error {
 	return d.Validator.Struct(s)

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,8 +13,8 @@ import (
 type AppCallback func(app *App)
 
 type App struct {
-	env       services.Environment
-	cleanupCB []func()
+	env      services.Environment
+	closable []io.Closer
 }
 
 func New() *App {
@@ -23,12 +24,8 @@ func New() *App {
 	return &d
 }
 
-func (d *App) registerResource(res Resource) error {
-	if err := res.Init(d.env); err != nil {
-		return err
-	}
-	d.cleanupCB = append(d.cleanupCB, res.Close)
-	return nil
+func (d *App) registerResource(res io.Closer) {
+	d.closable = append(d.closable, res)
 }
 
 func (d *App) config(configs ...AppCallback) {
@@ -54,7 +51,8 @@ func (d *App) Start(data Lifecycle) {
 	}
 
 	data.Close()
-	for _, cb := range d.cleanupCB {
-		cb()
+	for _, c := range d.closable {
+		err := c.Close()
+		assert.NoError(err, "resource close", "fault", "Close")
 	}
 }

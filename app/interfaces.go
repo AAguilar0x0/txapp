@@ -9,8 +9,3 @@ type Lifecycle interface {
 	Run()
 	Close()
 }
-
-type Resource interface {
-	Init(env services.Environment) error
-	Close()
-}

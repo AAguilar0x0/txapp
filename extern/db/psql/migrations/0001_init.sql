@@ -1,6 +1,6 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS users (
-  id  uuid  PRIMARY KEY  DEFAULT gen_random_uuid(),
+  id  TEXT  PRIMARY KEY  NOT NULL  DEFAULT NULL,
   email  TEXT UNIQUE  NOT NULL  DEFAULT NULL,
   password  TEXT  NOT NULL  DEFAULT NULL,
   first_name  TEXT  NOT NULL  DEFAULT '',

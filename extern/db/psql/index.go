@@ -16,10 +16,7 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-func (d *Queries) Init(env services.Environment) error {
-	if d.db != nil {
-		return nil
-	}
+func NewDB(env services.Environment) (*Queries, error) {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		env.GetDefault("DB_HOST", "localhost"),
@@ -31,7 +28,7 @@ func (d *Queries) Init(env services.Environment) error {
 	)
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	config.MaxConns = int32(max(runtime.NumCPU(), 4))
 	config.MinConns = 1
@@ -40,20 +37,21 @@ func (d *Queries) Init(env services.Environment) error {
 	config.HealthCheckPeriod = time.Minute
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	d.db = pool
+	d := New(pool)
 
 	err = d.Migrate("extern/db/psql/migrations", "up", nil, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return d, nil
 }
 
-func (d *Queries) Close() {
+func (d *Queries) Close() error {
 	d.db.(*pgxpool.Pool).Close()
+	return nil
 }
 
 func (d *Queries) Migrate(dir, command string, version *int64, noVersioning bool) error {

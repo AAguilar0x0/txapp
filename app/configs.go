@@ -20,28 +20,28 @@ func environment(app *App) {
 
 func Database(cb func(db *psql.Queries)) AppCallback {
 	return func(app *App) {
-		db := psql.Queries{}
-		err := app.registerResource(&db)
+		db, err := psql.NewDB(app.env)
 		assert.NoError(err, "psql instantiation", "fault", "registerResource")
-		cb(&db)
+		app.registerResource(db)
+		cb(db)
 	}
 }
 
 func Auth(cb func(auth services.Authenticator)) AppCallback {
 	return func(app *App) {
-		auth := authcustom.Auth{}
-		err := app.registerResource(&auth)
+		auth, err := authcustom.New(app.env)
 		assert.NoError(err, "authcustom instantiation", "fault", "registerResource")
-		cb(&auth)
+		app.registerResource(auth)
+		cb(auth)
 	}
 }
 
 func Validator(cb func(data services.Validator)) AppCallback {
 	return func(app *App) {
-		validator := validatorv10.ValidatorV10{}
-		err := app.registerResource(&validator)
+		validator, err := validatorv10.New(app.env)
 		assert.NoError(err, "validatorv10 instantiation", "fault", "registerResource")
-		cb(&validator)
+		app.registerResource(validator)
+		cb(validator)
 	}
 }
 

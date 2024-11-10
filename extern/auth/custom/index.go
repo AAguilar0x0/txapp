@@ -19,25 +19,23 @@ type Claims struct {
 }
 
 type Auth struct {
-	init bool
 	pkey crypto.PublicKey
 	skey crypto.PrivateKey
 }
 
-func (d *Auth) Init(env services.Environment) error {
-	if d.init {
-		return nil
-	}
+func New(env services.Environment) (*Auth, error) {
 	appSecret := env.MustGet("AUTH_SECRET")
+	d := Auth{}
 	err := d.parseKeyPairEdPrivateKeyFromPEM([]byte(appSecret))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	d.init = true
-	return nil
+	return &d, nil
 }
 
-func (*Auth) Close() {}
+func (*Auth) Close() error {
+	return nil
+}
 
 func (d *Auth) Hash(input string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(input), 15)
