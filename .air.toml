@@ -5,10 +5,10 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./bin/web"
-  cmd = "(cd ./cmd/web && swag init --parseDependency) && sqlc generate && templ generate && npx tailwindcss -i ./cmd/web/static/input.css -o ./cmd/web/static/output.css --minify && make cmd/web/build"
+  cmd = "(cd ./cmd/web && swag init --parseDependency) && sqlc generate && templ generate && make cmd/sqlcore/run && npx tailwindcss -i ./cmd/web/static/input.css -o ./cmd/web/static/output.css --minify && make cmd/web/build"
   delay = 0
-  exclude_dir = ["assets", "tmp", "vendor", "testdata", "cmd/web/static", "cmd/web/docs"]
-  exclude_file = ["extern/db/psql/db.go", "extern/db/psql/models.go","extern/db/psql/*.sql.go"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "cmd/web/static", "cmd/web/docs", "core/models"]
+  exclude_file = ["extern/db/psql/db.go", "extern/db/psql/models.go", "extern/db/psql/querier.go", "extern/db/psql/*.sql.go"]
   exclude_regex = ["_test.go", ".*_templ.go"]
   exclude_unchanged = false
   follow_symlink = false

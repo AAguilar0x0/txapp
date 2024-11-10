@@ -131,3 +131,4 @@ cmd/migrate/run:
 .PHONY: cmd/sqlcore/run
 cmd/sqlcore/run:
 	go run ./cmd/sqlcore/main.go
+	go fmt ./core/models

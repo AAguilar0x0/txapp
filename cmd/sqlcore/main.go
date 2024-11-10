@@ -282,7 +282,7 @@ func main() {
 
 		generateStructs(GeneratorConfig{
 			SourcePath:      file,
-			DestinationPath: filepath.Join(DESTINATION, strings.TrimSuffix(baseName, ".go")+".go"),
+			DestinationPath: filepath.Join(DESTINATION, baseName),
 			Template:        queryModelTemplate,
 			PackageName:     packageName,
 		})
