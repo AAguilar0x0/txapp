@@ -61,9 +61,9 @@ func New(env services.Environment) (*Psql, error) {
 	d := dal.New(pool)
 	a.db = d
 
-	err = a.Migrate("extern/db/psql/migrations", "up", nil, false)
-	if err != nil {
-		return nil, err
+	apiErr := a.Migrate("extern/db/psql/migrations", "up", nil, false)
+	if apiErr != nil {
+		return nil, apiErr
 	}
 
 	return &a, nil
@@ -74,14 +74,14 @@ func (d *Psql) Close() error {
 	return nil
 }
 
-func (d *Psql) Migrate(dir, command string, version *int64, noVersioning bool) error {
+func (d *Psql) Migrate(dir, command string, version *int64, noVersioning bool) *apierrors.APIError {
 	sqlDB := stdlib.OpenDBFromPool(d.pool)
 	goose.SetBaseFS(os.DirFS("./"))
 	if err := goose.SetDialect("pgx"); err != nil {
-		return err
+		return apierrors.InternalServerError(err.Error())
 	}
 	if strings.HasSuffix(command, "-to") && version == nil {
-		return errors.New("missing version")
+		return apierrors.InternalServerError("missing version")
 	}
 	var err error
 	options := []goose.OptionsFunc{}
@@ -100,18 +100,21 @@ func (d *Psql) Migrate(dir, command string, version *int64, noVersioning bool) e
 	case "down-to":
 		err = goose.DownTo(sqlDB, dir, *version, options...)
 	default:
-		return errors.New("missing or unknown migration command")
+		return apierrors.InternalServerError("missing or unknown migration command")
 	}
-	return err
+	if err != nil {
+		return apierrors.InternalServerError(err.Error())
+	}
+	return nil
 }
 
-func (d *Psql) Begin(ctx context.Context) (models.Database, error) {
+func (d *Psql) Begin(ctx context.Context) (models.Database, *apierrors.APIError) {
 	if d.tx != nil {
 		return d, nil
 	}
 	tx, err := d.pool.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return nil, apierrors.InternalServerError(err.Error())
 	}
 	return &Psql{
 		tx: tx,
@@ -119,16 +122,24 @@ func (d *Psql) Begin(ctx context.Context) (models.Database, error) {
 	}, nil
 }
 
-func (d *Psql) Rollback(ctx context.Context) error {
+func (d *Psql) Rollback(ctx context.Context) *apierrors.APIError {
 	if d.tx == nil {
 		return nil
 	}
-	return d.tx.Rollback(ctx)
+	err := d.tx.Rollback(ctx)
+	if err != nil {
+		return apierrors.InternalServerError(err.Error())
+	}
+	return nil
 }
 
-func (d *Psql) Commit(ctx context.Context) error {
+func (d *Psql) Commit(ctx context.Context) *apierrors.APIError {
 	if d.tx == nil {
 		return nil
 	}
-	return d.tx.Commit(ctx)
+	err := d.tx.Commit(ctx)
+	if err != nil {
+		return apierrors.InternalServerError(err.Error())
+	}
+	return nil
 }

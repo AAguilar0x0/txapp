@@ -5,9 +5,9 @@ import (
 	"crypto/ed25519"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"time"
 
+	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -37,9 +37,9 @@ func (*Auth) Close() error {
 	return nil
 }
 
-func (d *Auth) Hash(input string) (string, error) {
+func (d *Auth) Hash(input string) (string, *apierrors.APIError) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(input), 15)
-	return string(bytes), err
+	return string(bytes), apierrors.InternalServerError(err.Error())
 }
 
 func (d *Auth) CompareHash(input, hash string) bool {
@@ -47,21 +47,21 @@ func (d *Auth) CompareHash(input, hash string) bool {
 	return err == nil
 }
 
-func (d *Auth) parseKeyPairEdPrivateKeyFromPEM(key []byte) error {
+func (d *Auth) parseKeyPairEdPrivateKeyFromPEM(key []byte) *apierrors.APIError {
 	var block *pem.Block
 	if block, _ = pem.Decode(key); block == nil {
-		return errors.New("invalid key: Key must be a PEM encoded PKCS1 or PKCS8 key")
+		return apierrors.InternalServerError("invalid key: Key must be a PEM encoded PKCS1 or PKCS8 key")
 	}
 
 	parsedKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return err
+		return apierrors.InternalServerError(err.Error())
 	}
 
 	var privateKey ed25519.PrivateKey
 	var ok bool
 	if privateKey, ok = parsedKey.(ed25519.PrivateKey); !ok {
-		return errors.New("key is not a valid Ed25519 private key")
+		return apierrors.InternalServerError("key is not a valid Ed25519 private key")
 	}
 
 	d.skey = privateKey
@@ -70,7 +70,7 @@ func (d *Auth) parseKeyPairEdPrivateKeyFromPEM(key []byte) error {
 	return nil
 }
 
-func (d *Auth) GenerateToken(id, role, key string) (string, error) {
+func (d *Auth) GenerateToken(id, role, key string) (string, *apierrors.APIError) {
 	claims := Claims{
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -91,18 +91,22 @@ func (d *Auth) GenerateToken(id, role, key string) (string, error) {
 	} else {
 		k = []byte(key)
 	}
-	return token.SignedString(k)
+	tokenStr, err := token.SignedString(k)
+	if err != nil {
+		return "", apierrors.InternalServerError(err.Error())
+	}
+	return tokenStr, nil
 }
 
-func (d *Auth) VerifyJWT(token string) error {
+func (d *Auth) VerifyJWT(token string) *apierrors.APIError {
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		return d.pkey, nil
 	})
 	if err != nil {
-		return err
+		return apierrors.InternalServerError(err.Error())
 	}
 	if !t.Valid {
-		return errors.New("invalid token")
+		return apierrors.Unauthorized("invalid token")
 	}
 	return nil
 }

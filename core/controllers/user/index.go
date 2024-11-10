@@ -21,7 +21,7 @@ func New(db models.Database, auth services.Authenticator) (*User, error) {
 	return &user, nil
 }
 
-func (d *User) SignIn(ctx context.Context, email, password string) error {
+func (d *User) SignIn(ctx context.Context, email, password string) *apierrors.APIError {
 	user, err := d.db.GetUserForAuth(ctx, email)
 	if err != nil {
 		return err

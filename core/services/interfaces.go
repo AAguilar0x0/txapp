@@ -1,17 +1,19 @@
 package services
 
+import "github.com/AAguilar0x0/txapp/core/pkg/apierrors"
+
 type EnumValidator interface {
 	ValidateEnum() bool
 }
 
 type Validator interface {
-	Struct(s interface{}) error
+	Struct(s interface{}) *apierrors.APIError
 }
 
 type Authenticator interface {
-	Hash(input string) (string, error)
+	Hash(input string) (string, *apierrors.APIError)
 	CompareHash(input, hash string) bool
-	VerifyJWT(token string) error
+	VerifyJWT(token string) *apierrors.APIError
 }
 
 type Environment interface {
@@ -22,5 +24,5 @@ type Environment interface {
 }
 
 type IDGenerator interface {
-	Generate() (string, error)
+	Generate() (string, *apierrors.APIError)
 }

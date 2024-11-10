@@ -22,7 +22,7 @@ func environment(app *App) {
 func Database(cb func(db models.Database)) AppCallback {
 	return func(app *App) {
 		db, err := psql.New(app.env)
-		assert.NoError(err, "psql instantiation", "fault", "registerResource")
+		assert.NoError(err, "psql instantiation", "fault", "New")
 		app.registerResource(db)
 		cb(db)
 	}
@@ -31,7 +31,7 @@ func Database(cb func(db models.Database)) AppCallback {
 func Auth(cb func(auth services.Authenticator)) AppCallback {
 	return func(app *App) {
 		auth, err := authcustom.New(app.env)
-		assert.NoError(err, "authcustom instantiation", "fault", "registerResource")
+		assert.NoError(err, "authcustom instantiation", "fault", "New")
 		app.registerResource(auth)
 		cb(auth)
 	}
@@ -40,7 +40,7 @@ func Auth(cb func(auth services.Authenticator)) AppCallback {
 func Validator(cb func(data services.Validator)) AppCallback {
 	return func(app *App) {
 		validator, err := validatorv10.New(app.env)
-		assert.NoError(err, "validatorv10 instantiation", "fault", "registerResource")
+		assert.NoError(err, "validatorv10 instantiation", "fault", "New")
 		app.registerResource(validator)
 		cb(validator)
 	}
