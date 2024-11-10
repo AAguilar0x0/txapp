@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,7 +25,7 @@ type TypeInfo struct {
 type FieldInfo struct {
 	Name    string
 	Type    string
-	JsonTag string
+	JSONTag string
 }
 
 type InterfaceInfo struct {
@@ -45,7 +46,7 @@ type GeneratorConfig struct {
 	PackageName     string
 }
 
-func generateModels(config GeneratorConfig) {
+func generateStructs(config GeneratorConfig) {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, config.SourcePath, nil, 0)
 	if err != nil {
@@ -127,12 +128,12 @@ func extractTypeInfo(name string, structType *ast.StructType) TypeInfo {
 		if len(field.Names) > 0 {
 			fieldName := field.Names[0].Name
 			fieldType := getFieldType(field.Type)
-			jsonTag := extractJsonTag(field.Tag)
+			jsonTag := extractJSONTag(field.Tag)
 
 			fields = append(fields, FieldInfo{
 				Name:    fieldName,
 				Type:    convertType(fieldType),
-				JsonTag: jsonTag,
+				JSONTag: jsonTag,
 			})
 		}
 	}
@@ -216,7 +217,7 @@ func convertType(original string) string {
 	}
 }
 
-func extractJsonTag(tag *ast.BasicLit) string {
+func extractJSONTag(tag *ast.BasicLit) string {
 	if tag == nil {
 		return ""
 	}
@@ -232,7 +233,7 @@ import (
 {{range .Types}}
 type {{.Name}} struct {
   {{- range .Fields}}
-  {{.Name}} {{.Type}} ` + "`{{.JsonTag}}`" + `
+  {{.Name}} {{.Type}} ` + "`{{.JSONTag}}`" + `
   {{- end}}
 }
 {{end}}`
@@ -241,7 +242,7 @@ const queryModelTemplate = `package models
 {{range .Types}}
 type {{.Name}} struct {
   {{- range .Fields}}
-  {{.Name}} {{.Type}} ` + "`{{.JsonTag}}`" + `
+  {{.Name}} {{.Type}} ` + "`{{.JSONTag}}`" + `
   {{- end}}
 }
 {{end}}`
@@ -260,11 +261,11 @@ type {{.Name}} interface {
 {{end}}`
 
 func main() {
-	if err := os.MkdirAll(DESTINATION, 0755); err != nil {
+	if err := os.MkdirAll(DESTINATION, fs.ModePerm); err != nil {
 		panic(err)
 	}
 
-	generateModels(GeneratorConfig{
+	generateStructs(GeneratorConfig{
 		SourcePath:      filepath.Join(SOURCE, "models.go"),
 		DestinationPath: filepath.Join(DESTINATION, "models.go"),
 		Template:        baseModelTemplate,
@@ -275,12 +276,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	for _, file := range files {
 		baseName := filepath.Base(file)
 		packageName := strings.TrimSuffix(baseName, ".sql.go")
 
-		generateModels(GeneratorConfig{
+		generateStructs(GeneratorConfig{
 			SourcePath:      file,
 			DestinationPath: filepath.Join(DESTINATION, strings.TrimSuffix(baseName, ".go")+".go"),
 			Template:        queryModelTemplate,
