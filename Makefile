@@ -54,7 +54,7 @@ test/cover:
 
 ## setup: install and configure necessary dependencies for development
 .PHONY: setup
-setup: install install/swagger git/hooks
+setup: install install/bin git/hooks
 
 ## install: install necessary dependencies
 .PHONY: install
@@ -62,15 +62,13 @@ install:
 	go mod download
 	go mod verify
 
-## install/swagger: install swagger dependency
-.PHONY: install/swagger
-install/swagger:
+## install/bin: install binary dependency
+.PHONY: install/bin
+install/bin:
+	go install github.com/air-verse/air@latest
 	go install github.com/swaggo/swag/cmd/swag@latest
-
-## run/live: run the application with reloading on file changes
-.PHONY: run/live
-run/live:
-	go run github.com/cosmtrek/air@v1.43.0
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	go install github.com/a-h/templ/cmd/templ@latest
 
 ## docker: run the application with docker
 .PHONY: docker
@@ -121,6 +119,11 @@ cmd/web/build:
 .PHONY: cmd/web/bin
 cmd/web/bin:
 	${MAIN_PACKAGE_PATH}/web
+
+## cmd/web/live: run the application with reloading on file changes
+.PHONY: cmd/web/live
+cmd/web/live:
+	air
 
 ## cmd/migrate/run: run the migrate application
 .PHONY: cmd/migrate/run
