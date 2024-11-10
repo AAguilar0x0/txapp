@@ -39,7 +39,7 @@ func (*Auth) Close() error {
 
 func (d *Auth) Hash(input string) (string, *apierrors.APIError) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(input), 15)
-	return string(bytes), apierrors.InternalServerError(err.Error())
+	return string(bytes), apierrors.InternalServerError("cannot generate", err.Error())
 }
 
 func (d *Auth) CompareHash(input, hash string) bool {
@@ -93,7 +93,7 @@ func (d *Auth) GenerateToken(id, role, key string) (string, *apierrors.APIError)
 	}
 	tokenStr, err := token.SignedString(k)
 	if err != nil {
-		return "", apierrors.InternalServerError(err.Error())
+		return "", apierrors.InternalServerError("cannot generate", err.Error())
 	}
 	return tokenStr, nil
 }
@@ -103,7 +103,7 @@ func (d *Auth) VerifyJWT(token string) *apierrors.APIError {
 		return d.pkey, nil
 	})
 	if err != nil {
-		return apierrors.InternalServerError(err.Error())
+		return apierrors.InternalServerError("cannot verify", err.Error())
 	}
 	if !t.Valid {
 		return apierrors.Unauthorized("invalid token")

@@ -63,7 +63,7 @@ func (d *handler) Signin(c echo.Context) error {
 		return apierrors.BadRequest("Validation error")
 	}
 	if err := d.Vldtr.Struct(&body); err != nil {
-		return apierrors.BadRequest("Validation error")
+		return err
 	}
 	if err := d.User.SignIn(c.Request().Context(), body.Email, body.Password); err != nil {
 		return err

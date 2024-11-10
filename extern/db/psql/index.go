@@ -27,9 +27,9 @@ type Psql struct {
 
 func transformError(err error) *apierrors.APIError {
 	if errors.Is(err, pgx.ErrNoRows) {
-		return apierrors.NotFound(err.Error())
+		return apierrors.NotFound("not found", err.Error())
 	}
-	return apierrors.InternalServerError(err.Error())
+	return apierrors.InternalServerError("an error occurred", err.Error())
 }
 
 func New(env services.Environment) (*Psql, error) {
@@ -114,7 +114,7 @@ func (d *Psql) Begin(ctx context.Context) (models.Database, *apierrors.APIError)
 	}
 	tx, err := d.pool.Begin(ctx)
 	if err != nil {
-		return nil, apierrors.InternalServerError(err.Error())
+		return nil, apierrors.InternalServerError("cannot create transaction", err.Error())
 	}
 	return &Psql{
 		tx: tx,
@@ -128,7 +128,7 @@ func (d *Psql) Rollback(ctx context.Context) *apierrors.APIError {
 	}
 	err := d.tx.Rollback(ctx)
 	if err != nil {
-		return apierrors.InternalServerError(err.Error())
+		return apierrors.InternalServerError("cannot rollback", err.Error())
 	}
 	return nil
 }
@@ -139,7 +139,7 @@ func (d *Psql) Commit(ctx context.Context) *apierrors.APIError {
 	}
 	err := d.tx.Commit(ctx)
 	if err != nil {
-		return apierrors.InternalServerError(err.Error())
+		return apierrors.InternalServerError("cannot commit", err.Error())
 	}
 	return nil
 }

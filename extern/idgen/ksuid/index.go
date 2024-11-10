@@ -14,7 +14,7 @@ func New() (*Ksuid, error) {
 func (d *Ksuid) Generate() (string, *apierrors.APIError) {
 	id, err := ksuid.NewRandom()
 	if err != nil {
-		return "", apierrors.InternalServerError(err.Error())
+		return "", apierrors.InternalServerError("cannot generate", err.Error())
 	}
 	return id.String(), nil
 }
