@@ -5,16 +5,16 @@ import (
 	"strconv"
 
 	"github.com/AAguilar0x0/txapp/app"
+	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/assert"
 	"github.com/AAguilar0x0/txapp/core/services"
-	"github.com/AAguilar0x0/txapp/extern/db/psql"
 )
 
 type Migrate struct {
 	dir     string
 	command string
 	version *int64
-	db      *psql.Queries
+	db      models.Database
 }
 
 func New(env services.Environment, config func(configs ...app.AppCallback)) app.Lifecycle {
@@ -36,7 +36,7 @@ func New(env services.Environment, config func(configs ...app.AppCallback)) app.
 		version: version,
 	}
 	config(
-		app.Database(func(db *psql.Queries) {
+		app.Database(func(db models.Database) {
 			d.db = db
 		}),
 	)

@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/AAguilar0x0/txapp/core/controllers/user"
+	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/assert"
 	"github.com/AAguilar0x0/txapp/core/services"
 	authcustom "github.com/AAguilar0x0/txapp/extern/auth/custom"
@@ -18,9 +19,9 @@ func environment(app *App) {
 	app.env = env.New()
 }
 
-func Database(cb func(db *psql.Queries)) AppCallback {
+func Database(cb func(db models.Database)) AppCallback {
 	return func(app *App) {
-		db, err := psql.NewDB(app.env)
+		db, err := psql.New(app.env)
 		assert.NoError(err, "psql instantiation", "fault", "registerResource")
 		app.registerResource(db)
 		cb(db)
@@ -51,10 +52,10 @@ func Validator(cb func(data services.Validator)) AppCallback {
 
 func UserController(cb func(data *user.User)) AppCallback {
 	return func(app *App) {
-		var lDB *psql.Queries
+		var lDB models.Database
 		var lAuth services.Authenticator
 		app.config(
-			Database(func(db *psql.Queries) {
+			Database(func(db models.Database) {
 				lDB = db
 			}),
 			Auth(func(auth services.Authenticator) {

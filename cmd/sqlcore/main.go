@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	SOURCE      = "./extern/db/psql"
+	SOURCE      = "./extern/db/psql/dal"
 	DESTINATION = "./core/models"
 )
 
@@ -288,7 +288,7 @@ func main() {
 		defer wg.Done()
 		generateInterfaces(GeneratorConfig{
 			SourcePath:      filepath.Join(SOURCE, "querier.go"),
-			DestinationPath: filepath.Join(DESTINATION, "interfaces.go"),
+			DestinationPath: filepath.Join(DESTINATION, "querier.go"),
 			Template:        intrfc,
 		})
 	}()

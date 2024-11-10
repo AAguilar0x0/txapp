@@ -6,8 +6,8 @@ sql:
     strict_function_checks: true
     gen:
       go:
-        package: "psql"
-        out: "./extern/db/psql"
+        package: "dal"
+        out: "./extern/db/psql/dal"
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_pointers_for_null_types: true
