@@ -10,28 +10,17 @@ import (
 	"github.com/AAguilar0x0/txapp/core/services"
 )
 
-type AppCallback func(app *App)
+type ServiceProvider interface {
+	services.ServiceProvider
+	io.Closer
+}
 
 type App struct {
-	env      services.Environment
-	closable []io.Closer
+	services ServiceProvider
 }
 
-func New() *App {
-	d := App{}
-	d.config(environment)
-	assert.Assert(d.env != nil, "unexpected Env nil value", "fault", "App.Env")
-	return &d
-}
-
-func (d *App) registerResource(res io.Closer) {
-	d.closable = append(d.closable, res)
-}
-
-func (d *App) config(configs ...AppCallback) {
-	for _, conf := range configs {
-		conf(d)
-	}
+func New(services ServiceProvider) *App {
+	return &App{services}
 }
 
 func (d *App) Start(init Initializer) {
@@ -39,20 +28,20 @@ func (d *App) Start(init Initializer) {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan bool, 1)
 
-	data := init(d.env, d.config)
+	data, err := init(d.services)
+	if err == nil {
+		go func() {
+			data.Run()
+			done <- true
+		}()
+		select {
+		case <-sigCh:
+		case <-done:
+		}
 
-	go func() {
-		data.Run()
-		done <- true
-	}()
-	select {
-	case <-sigCh:
-	case <-done:
+		data.Close()
 	}
 
-	data.Close()
-	for _, c := range d.closable {
-		err := c.Close()
-		assert.NoError(err, "resource close", "fault", "Close")
-	}
+	err = d.services.Close()
+	assert.NoError(err, "resource close", "fault", "Close")
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/AAguilar0x0/txapp/app"
 	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/assert"
-	"github.com/AAguilar0x0/txapp/core/services"
+	"github.com/AAguilar0x0/txapp/extern"
 )
 
 type Migrate struct {
@@ -17,7 +17,16 @@ type Migrate struct {
 	db      models.Database
 }
 
-func New(env services.Environment, config func(configs ...app.AppCallback)) app.Lifecycle {
+func New(services app.ServiceProvider) (app.Lifecycle, error) {
+	env, err := services.Environment()
+	if err != nil {
+		return nil, err
+	}
+	db, err := services.Database()
+	if err != nil {
+		return nil, err
+	}
+
 	dir := env.GetDefault("dir", "cmd/migrate/migrations")
 	command := env.GetDefault("command", "up")
 	versionStr := env.Get("version")
@@ -34,14 +43,10 @@ func New(env services.Environment, config func(configs ...app.AppCallback)) app.
 		dir:     dir,
 		command: command,
 		version: version,
+		db:      db,
 	}
-	config(
-		app.Database(func(db models.Database) {
-			d.db = db
-		}),
-	)
 
-	return &d
+	return &d, nil
 }
 
 func (d *Migrate) Run() {
@@ -53,6 +58,6 @@ func (d *Migrate) Run() {
 func (d *Migrate) Close() {}
 
 func main() {
-	a := app.New()
+	a := app.New(extern.New())
 	a.Start(New)
 }

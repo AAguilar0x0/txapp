@@ -10,9 +10,9 @@ import (
 	"github.com/AAguilar0x0/txapp/cmd/web/api"
 	"github.com/AAguilar0x0/txapp/cmd/web/pages"
 	"github.com/AAguilar0x0/txapp/cmd/web/types"
-	"github.com/AAguilar0x0/txapp/core/controllers/user"
+	"github.com/AAguilar0x0/txapp/core/controllers"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
-	"github.com/AAguilar0x0/txapp/core/services"
+	"github.com/AAguilar0x0/txapp/extern"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -23,23 +23,30 @@ type Web struct {
 	port string
 }
 
-func New(env services.Environment, config func(configs ...app.AppCallback)) app.Lifecycle {
+func New(services app.ServiceProvider) (app.Lifecycle, error) {
+	env, err := services.Environment()
+	if err != nil {
+		return nil, err
+	}
+	validator, err := services.Validator()
+	if err != nil {
+		return nil, err
+	}
+	controllers := controllers.New(services)
+	user, err := controllers.User()
+	if err != nil {
+		return nil, err
+	}
+
 	d := Web{
 		wg: &sync.WaitGroup{},
 	}
 	h := &types.Handler{
-		Env: env.Get("ENV"),
-		Wg:  d.wg,
+		Env:   env.Get("ENV"),
+		Wg:    d.wg,
+		Vldtr: validator,
+		User:  user,
 	}
-
-	config(
-		app.Validator(func(data services.Validator) {
-			h.Vldtr = data
-		}),
-		app.UserController(func(data *user.User) {
-			h.User = data
-		}),
-	)
 
 	d.port = env.GetDefault("PORT", "8080")
 	d.e = echo.New()
@@ -61,7 +68,7 @@ func New(env services.Environment, config func(configs ...app.AppCallback)) app.
 	pages.New(d.e.Group(""), h)
 	api.New(d.e.Group("/api"), h)
 
-	return &d
+	return &d, nil
 }
 
 func (d *Web) Run() {
@@ -88,6 +95,6 @@ func (d *Web) Close() {
 // @host localhost:8080
 // @BasePath /api
 func main() {
-	a := app.New()
+	a := app.New(extern.New())
 	a.Start(New)
 }
