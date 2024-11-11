@@ -1,6 +1,20 @@
 package services
 
-import "github.com/AAguilar0x0/txapp/core/pkg/apierrors"
+import (
+	"io"
+
+	"github.com/AAguilar0x0/txapp/core/models"
+	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
+)
+
+type ServiceProvider interface {
+	Environment() (Environment, error)
+	Database() (models.Database, error)
+	Validator() (Validator, error)
+	Authenticator() (Authenticator, error)
+	IDGenerator() (IDGenerator, error)
+	io.Closer
+}
 
 type EnumValidator interface {
 	ValidateEnum() bool

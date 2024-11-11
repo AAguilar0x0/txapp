@@ -11,6 +11,10 @@ func New() (*Ksuid, error) {
 	return &Ksuid{}, nil
 }
 
+func (d *Ksuid) Close() error {
+	return nil
+}
+
 func (d *Ksuid) Generate() (string, *apierrors.APIError) {
 	id, err := ksuid.NewRandom()
 	if err != nil {
