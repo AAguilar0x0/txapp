@@ -12,7 +12,7 @@ import (
 	"github.com/AAguilar0x0/txapp/extern/validator/validatorv10"
 )
 
-type Services struct {
+type DefaultServiceProvider struct {
 	environment   services.Environment
 	database      models.Database
 	validator     services.Validator
@@ -21,24 +21,24 @@ type Services struct {
 	closable      []io.Closer
 }
 
-func New() *Services {
-	return &Services{
+func New() *DefaultServiceProvider {
+	return &DefaultServiceProvider{
 		environment: env.New(),
 	}
 }
 
-func (d *Services) cleanup(c io.Closer) {
+func (d *DefaultServiceProvider) cleanup(c io.Closer) {
 	d.closable = append(d.closable, c)
 }
 
-func (d *Services) Environment() (services.Environment, error) {
+func (d *DefaultServiceProvider) Environment() (services.Environment, error) {
 	if d.environment == nil {
 		d.environment = env.New()
 	}
 	return d.environment, nil
 }
 
-func (d *Services) Database() (models.Database, error) {
+func (d *DefaultServiceProvider) Database() (models.Database, error) {
 	if d.database == nil {
 		data, err := psql.New(d.environment)
 		if err != nil {
@@ -50,7 +50,7 @@ func (d *Services) Database() (models.Database, error) {
 	return d.database, nil
 }
 
-func (d *Services) Validator() (services.Validator, error) {
+func (d *DefaultServiceProvider) Validator() (services.Validator, error) {
 	if d.validator == nil {
 		data, err := validatorv10.New(d.environment)
 		if err != nil {
@@ -62,7 +62,7 @@ func (d *Services) Validator() (services.Validator, error) {
 	return d.validator, nil
 }
 
-func (d *Services) Authenticator() (services.Authenticator, error) {
+func (d *DefaultServiceProvider) Authenticator() (services.Authenticator, error) {
 	if d.authenticator == nil {
 		data, err := authcustom.New(d.environment)
 		if err != nil {
@@ -74,7 +74,7 @@ func (d *Services) Authenticator() (services.Authenticator, error) {
 	return d.authenticator, nil
 }
 
-func (d *Services) IDGenerator() (services.IDGenerator, error) {
+func (d *DefaultServiceProvider) IDGenerator() (services.IDGenerator, error) {
 	if d.idGenerator == nil {
 		data, err := ksuid.New()
 		if err != nil {
@@ -86,7 +86,7 @@ func (d *Services) IDGenerator() (services.IDGenerator, error) {
 	return d.idGenerator, nil
 }
 
-func (d *Services) Close() error {
+func (d *DefaultServiceProvider) Close() error {
 	for i := len(d.closable) - 1; i >= 0; i-- {
 		if err := d.closable[i].Close(); err != nil {
 			return err

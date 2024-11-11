@@ -5,16 +5,16 @@ import (
 	"github.com/AAguilar0x0/txapp/core/services"
 )
 
-type Controllers struct {
+type DefaultControllerFactory struct {
 	services services.ServiceProvider
 }
 
-func New(services services.ServiceProvider) *Controllers {
-	d := Controllers{services}
+func New(services services.ServiceProvider) *DefaultControllerFactory {
+	d := DefaultControllerFactory{services}
 	return &d
 }
 
-func (d *Controllers) User() (*user.User, error) {
+func (d *DefaultControllerFactory) User() (*user.User, error) {
 	db, err := d.services.Database()
 	if err != nil {
 		return nil, err
