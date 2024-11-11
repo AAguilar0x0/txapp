@@ -24,16 +24,26 @@ func New(services ServiceProvider) *App {
 }
 
 func (d *App) Start(init Initializer) {
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	done := make(chan bool, 1)
-
 	data, err := init(d.services)
 	if err == nil {
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		done := make(chan bool)
+
+		defer func() {
+			signal.Stop(sigCh)
+			close(sigCh)
+			close(done)
+		}()
+
 		go func() {
 			data.Run()
-			done <- true
+			select {
+			case done <- true:
+			default:
+			}
 		}()
+
 		select {
 		case <-sigCh:
 		case <-done:
