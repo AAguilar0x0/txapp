@@ -154,6 +154,9 @@ func extractFuncParams(funcType *ast.FuncType) string {
 			paramType := getFieldType(param.Type)
 			if len(param.Names) > 0 {
 				for _, name := range param.Names {
+					if name.Name == "newID" && paramType == "string" {
+						continue
+					}
 					params = append(params, fmt.Sprintf("%s %s", name.Name, paramType))
 				}
 			} else {

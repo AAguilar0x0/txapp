@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	CreateUser(ctx context.Context, iD string, email string, firstName string, lastName string, password string, role string) (User, error)
+	CreateUser(ctx context.Context, email string, firstName string, lastName string, password string, role string, newID string) (User, error)
 	GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, error)
 }
 

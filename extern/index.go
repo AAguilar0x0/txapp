@@ -40,7 +40,11 @@ func (d *DefaultServiceProvider) Environment() (services.Environment, error) {
 
 func (d *DefaultServiceProvider) Database() (models.Database, error) {
 	if d.database == nil {
-		data, err := psql.New(d.environment)
+		idGen, err := d.IDGenerator()
+		if err != nil {
+			return nil, err
+		}
+		data, err := psql.New(d.environment, idGen)
 		if err != nil {
 			return nil, err
 		}

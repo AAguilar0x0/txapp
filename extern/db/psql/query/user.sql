@@ -2,7 +2,7 @@
 INSERT INTO users (
  id, email, first_name, last_name, password, role
 ) VALUES (
- $1, $2, $3, $4, $5, $6
+ sqlc.arg(new_id), $1, $2, $3, $4, $5
 )
 RETURNING *;
 

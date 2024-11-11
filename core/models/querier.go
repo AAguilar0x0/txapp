@@ -6,6 +6,6 @@ import (
 )
 
 type Querier interface {
-	CreateUser(ctx context.Context, iD string, email string, firstName string, lastName string, password string, role string) (User, *apierrors.APIError)
+	CreateUser(ctx context.Context, email string, firstName string, lastName string, password string, role string) (User, *apierrors.APIError)
 	GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, *apierrors.APIError)
 }

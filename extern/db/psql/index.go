@@ -20,9 +20,10 @@ import (
 )
 
 type Psql struct {
-	pool *pgxpool.Pool
-	db   *dal.Queries
-	tx   pgx.Tx
+	pool  *pgxpool.Pool
+	db    *dal.Queries
+	tx    pgx.Tx
+	idGen services.IDGenerator
 }
 
 func transformError(err error) *apierrors.APIError {
@@ -32,7 +33,7 @@ func transformError(err error) *apierrors.APIError {
 	return apierrors.InternalServerError("an error occurred", err.Error())
 }
 
-func New(env services.Environment) (*Psql, error) {
+func New(env services.Environment, idGen services.IDGenerator) (*Psql, error) {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		env.GetDefault("DB_HOST", "localhost"),
@@ -56,7 +57,8 @@ func New(env services.Environment) (*Psql, error) {
 		return nil, err
 	}
 	a := Psql{
-		pool: pool,
+		pool:  pool,
+		idGen: idGen,
 	}
 	d := dal.New(pool)
 	a.db = d
@@ -117,8 +119,9 @@ func (d *Psql) Begin(ctx context.Context) (models.Database, *apierrors.APIError)
 		return nil, apierrors.InternalServerError("cannot create transaction", err.Error())
 	}
 	return &Psql{
-		tx: tx,
-		db: dal.New(tx),
+		tx:    tx,
+		db:    dal.New(tx),
+		idGen: d.idGen,
 	}, nil
 }
 

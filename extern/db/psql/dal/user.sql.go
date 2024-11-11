@@ -13,19 +13,19 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (
  id, email, first_name, last_name, password, role
 ) VALUES (
- $1, $2, $3, $4, $5, $6
+ $6, $1, $2, $3, $4, $5
 )
 RETURNING id, email, password, first_name, last_name, role, created_at, updated_at
 `
 
-func (q *Queries) CreateUser(ctx context.Context, iD string, email string, firstName string, lastName string, password string, role string) (User, error) {
+func (q *Queries) CreateUser(ctx context.Context, email string, firstName string, lastName string, password string, role string, newID string) (User, error) {
 	row := q.db.QueryRow(ctx, createUser,
-		iD,
 		email,
 		firstName,
 		lastName,
 		password,
 		role,
+		newID,
 	)
 	var i User
 	err := row.Scan(
