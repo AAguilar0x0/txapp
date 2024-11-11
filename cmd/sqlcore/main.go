@@ -199,10 +199,8 @@ func getFieldType(expr ast.Expr) string {
 
 func convertType(original string) string {
 	switch original {
-	case "time.Time":
-		return "time.Time"
 	default:
-		return "string"
+		return original
 	}
 }
 
