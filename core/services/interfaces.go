@@ -10,6 +10,7 @@ import (
 type ServiceProvider interface {
 	Environment() (Environment, error)
 	Database() (models.Database, error)
+	Migrator() (models.Migrator, error)
 	Validator() (Validator, error)
 	Authenticator() (Authenticator, error)
 	IDGenerator() (IDGenerator, error)

@@ -14,7 +14,7 @@ import (
 
 type DefaultServiceProvider struct {
 	environment   services.Environment
-	database      models.Database
+	database      models.DatabaseManager
 	validator     services.Validator
 	authenticator services.Authenticator
 	idGenerator   services.IDGenerator
@@ -38,7 +38,7 @@ func (d *DefaultServiceProvider) Environment() (services.Environment, error) {
 	return d.environment, nil
 }
 
-func (d *DefaultServiceProvider) Database() (models.Database, error) {
+func (d *DefaultServiceProvider) databaseManager() (models.DatabaseManager, error) {
 	if d.database == nil {
 		idGen, err := d.IDGenerator()
 		if err != nil {
@@ -52,6 +52,14 @@ func (d *DefaultServiceProvider) Database() (models.Database, error) {
 		d.cleanup(data)
 	}
 	return d.database, nil
+}
+
+func (d *DefaultServiceProvider) Database() (models.Database, error) {
+	return d.databaseManager()
+}
+
+func (d *DefaultServiceProvider) Migrator() (models.Migrator, error) {
+	return d.databaseManager()
 }
 
 func (d *DefaultServiceProvider) Validator() (services.Validator, error) {

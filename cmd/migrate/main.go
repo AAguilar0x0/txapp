@@ -14,7 +14,7 @@ type Migrate struct {
 	dir     string
 	command string
 	version *int64
-	db      models.Database
+	migrate models.Migrator
 }
 
 func New(services app.ServiceProvider) (app.Lifecycle, error) {
@@ -22,7 +22,7 @@ func New(services app.ServiceProvider) (app.Lifecycle, error) {
 	if err != nil {
 		return nil, err
 	}
-	db, err := services.Database()
+	migrate, err := services.Migrator()
 	if err != nil {
 		return nil, err
 	}
@@ -43,14 +43,14 @@ func New(services app.ServiceProvider) (app.Lifecycle, error) {
 		dir:     dir,
 		command: command,
 		version: version,
-		db:      db,
+		migrate: migrate,
 	}
 
 	return &d, nil
 }
 
 func (d *Migrate) Run() {
-	if err := d.db.Migrate(d.dir, d.command, d.version, true); err != nil {
+	if err := d.migrate.Migrate(d.dir, d.command, d.version, true); err != nil {
 		slog.Error("Error running migration", "error", err.Error())
 	}
 }
