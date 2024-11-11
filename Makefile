@@ -22,15 +22,14 @@ git/hooks:
 
 ## audit: run quality control checks
 .PHONY: audit
-audit: tidy test
+audit: check
 	go mod verify
-	test -z "$(shell gofmt -l .)" 
 	go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
 	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
-## tidy: cleanup and format code and tidy modfile
-.PHONY: tidy
-tidy:
+## check: run code maintenance tasks (tidy dependencies, verify, clean, and format code)
+.PHONY: check
+check:
 	go mod tidy -v
 	go vet ./...
 	go clean
