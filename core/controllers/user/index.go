@@ -9,14 +9,16 @@ import (
 )
 
 type User struct {
-	db   models.Database
-	auth services.Authenticator
+	db    models.Database
+	auth  services.Authenticator
+	idGen services.IDGenerator
 }
 
-func New(db models.Database, auth services.Authenticator) (*User, error) {
+func New(db models.Database, auth services.Authenticator, idGen services.IDGenerator) (*User, error) {
 	user := User{
 		db,
 		auth,
+		idGen,
 	}
 	return &user, nil
 }

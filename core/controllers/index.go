@@ -23,5 +23,9 @@ func (d *DefaultControllerFactory) User() (*user.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return user.New(db, auth)
+	idGen, err := d.services.IDGenerator()
+	if err != nil {
+		return nil, err
+	}
+	return user.New(db, auth, idGen)
 }
