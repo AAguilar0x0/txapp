@@ -11,6 +11,9 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+
+	"github.com/AAguilar0x0/txapp/core/pkg/assert"
+	"golang.org/x/mod/modfile"
 )
 
 const (
@@ -241,7 +244,7 @@ const interfaceTemplate = `package models
 
 import (
 	"context"
-	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
+	"%s/core/pkg/apierrors"
 )
 {{range .}}
 type {{.Name}} interface {
@@ -251,6 +254,20 @@ type {{.Name}} interface {
 }
 {{end}}`
 
+func getModuleName() string {
+	goModBytes, err := os.ReadFile("go.mod")
+	assert.NoError(err, "Failed to read go.mod file.")
+
+	modFile, err := modfile.Parse("go.mod", goModBytes, nil)
+	assert.NoError(err, "Failed to parse go.mod file.")
+
+	if modFile.Module == nil || modFile.Module.Mod.Path == "" {
+		assert.NoError(err, "No module declaration found in go.mod.")
+	}
+
+	return modFile.Module.Mod.Path
+}
+
 func main() {
 	if err := os.MkdirAll(DESTINATION, fs.ModePerm); err != nil {
 		panic(err)
@@ -259,7 +276,7 @@ func main() {
 	var wg sync.WaitGroup
 	model := template.Must(template.New("model").Parse(baseModelTemplate))
 	query := template.Must(template.New("query").Parse(queryModelTemplate))
-	intrfc := template.Must(template.New("interface").Parse(interfaceTemplate))
+	intrfc := template.Must(template.New("interface").Parse(fmt.Sprintf(interfaceTemplate, getModuleName())))
 
 	wg.Add(1)
 	go func() {
