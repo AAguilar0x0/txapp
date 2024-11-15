@@ -5,6 +5,8 @@ import (
 
 	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
+	"github.com/AAguilar0x0/txapp/core/pkg/withretry"
+	"github.com/AAguilar0x0/txapp/extern/db/psql/dal"
 )
 
 func (d *Psql) CreateUser(ctx context.Context, email string, firstName string, lastName string, password string, role string) (models.User, *apierrors.APIError) {
@@ -12,7 +14,9 @@ func (d *Psql) CreateUser(ctx context.Context, email string, firstName string, l
 	if err != nil {
 		return models.User{}, err
 	}
-	data, errI := d.db.CreateUser(ctx, email, firstName, lastName, password, role, id)
+	data, errI := withretry.WithRetry(ctx, withretry.DefaultConfig, transientError, func(ctx context.Context) (dal.User, error) {
+		return d.db.CreateUser(ctx, email, firstName, lastName, password, role, id)
+	})
 	return models.User(data), transformError(errI)
 }
 

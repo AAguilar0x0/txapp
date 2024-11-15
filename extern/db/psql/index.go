@@ -14,6 +14,7 @@ import (
 	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/AAguilar0x0/txapp/extern/db/psql/dal"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -27,10 +28,31 @@ type Psql struct {
 }
 
 func transformError(err error) *apierrors.APIError {
+	if err, ok := err.(*apierrors.APIError); ok {
+		return err
+	}
 	if errors.Is(err, pgx.ErrNoRows) {
 		return apierrors.NotFound("not found", err.Error())
 	}
 	return apierrors.InternalServerError("an error occurred", err.Error())
+}
+
+func transientError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if pgErr, ok := err.(*pgconn.PgError); ok {
+		switch pgErr.Code {
+		case "40001": // serialization_failure
+		case "40P01": // deadlock_detected
+		case "08006": // connection_failure
+		case "08001": // sqlclient_unable_to_establish_sqlconnection
+		case "08004": // sqlserver_rejected_establishment_of_sqlconnection
+			return true
+		}
+	}
+	return strings.Contains(err.Error(), "connection refused") ||
+		strings.Contains(err.Error(), "connection reset by peer")
 }
 
 func New(env services.Environment, idGen services.IDGenerator) (*Psql, error) {

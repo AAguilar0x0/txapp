@@ -57,6 +57,14 @@ func Unauthorized(message string, args ...string) *APIError {
 	return New(http.StatusUnauthorized, message, args)
 }
 
+func RequestTimeout(message string, args ...string) *APIError {
+	return New(http.StatusRequestTimeout, message, args)
+}
+
 func InternalServerError(message string, args ...string) *APIError {
 	return New(http.StatusInternalServerError, message, args)
+}
+
+func ServiceUnavailable(message string, args ...string) *APIError {
+	return New(http.StatusServiceUnavailable, message, args)
 }
