@@ -11,12 +11,14 @@ import (
 type User struct {
 	db   models.Database
 	auth services.Authenticator
+	hash services.Hash
 }
 
-func New(db models.Database, auth services.Authenticator) (*User, error) {
+func New(db models.Database, auth services.Authenticator, hash services.Hash) (*User, error) {
 	user := User{
 		db,
 		auth,
+		hash,
 	}
 	return &user, nil
 }
@@ -26,7 +28,7 @@ func (d *User) SignIn(ctx context.Context, email, password string) *apierrors.AP
 	if err != nil {
 		return err
 	}
-	if !d.auth.CompareHash(password, user.Password) {
+	if !d.hash.CompareHash(password, user.Password) {
 		return apierrors.Unauthorized("Invalid password")
 	}
 	return nil

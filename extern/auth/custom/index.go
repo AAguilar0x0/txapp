@@ -10,7 +10,6 @@ import (
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Claims struct {
@@ -37,16 +36,6 @@ func (*Auth) Close() error {
 	return nil
 }
 
-func (d *Auth) Hash(input string) (string, *apierrors.APIError) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(input), 15)
-	return string(bytes), apierrors.InternalServerError("cannot generate", err.Error())
-}
-
-func (d *Auth) CompareHash(input, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(input))
-	return err == nil
-}
-
 func (d *Auth) parseKeyPairEdPrivateKeyFromPEM(key []byte) *apierrors.APIError {
 	var block *pem.Block
 	if block, _ = pem.Decode(key); block == nil {
@@ -70,7 +59,7 @@ func (d *Auth) parseKeyPairEdPrivateKeyFromPEM(key []byte) *apierrors.APIError {
 	return nil
 }
 
-func (d *Auth) GenerateToken(id, role, key string) (string, *apierrors.APIError) {
+func (d *Auth) GenerateToken(id, role, HS512Key string) (string, *apierrors.APIError) {
 	claims := Claims{
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -81,15 +70,15 @@ func (d *Auth) GenerateToken(id, role, key string) (string, *apierrors.APIError)
 		},
 	}
 	var method jwt.SigningMethod = jwt.SigningMethodEdDSA
-	if key != "" {
+	if HS512Key != "" {
 		method = jwt.SigningMethodHS512
 	}
 	token := jwt.NewWithClaims(method, claims)
 	var k interface{}
-	if key == "" {
+	if HS512Key == "" {
 		k = d.skey
 	} else {
-		k = []byte(key)
+		k = []byte(HS512Key)
 	}
 	tokenStr, err := token.SignedString(k)
 	if err != nil {

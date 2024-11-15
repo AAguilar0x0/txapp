@@ -23,5 +23,9 @@ func (d *DefaultControllerFactory) User() (*user.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return user.New(db, auth)
+	hash, err := d.services.Hash()
+	if err != nil {
+		return nil, err
+	}
+	return user.New(db, auth, hash)
 }

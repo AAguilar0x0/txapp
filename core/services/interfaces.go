@@ -13,6 +13,7 @@ type ServiceProvider interface {
 	Migrator() (models.Migrator, error)
 	Validator() (Validator, error)
 	Authenticator() (Authenticator, error)
+	Hash() (Hash, error)
 	IDGenerator() (IDGenerator, error)
 	io.Closer
 }
@@ -26,9 +27,13 @@ type Validator interface {
 }
 
 type Authenticator interface {
+	GenerateToken(id, role, HS512Key string) (string, *apierrors.APIError)
+	VerifyJWT(token string) *apierrors.APIError
+}
+
+type Hash interface {
 	Hash(input string) (string, *apierrors.APIError)
 	CompareHash(input, hash string) bool
-	VerifyJWT(token string) *apierrors.APIError
 }
 
 type Environment interface {
