@@ -18,7 +18,7 @@ help:
 ## git/hooks: setup git hooks
 .PHONY: git/hooks
 git/hooks:
-	cp -R .git-hooks/* .git/hooks/
+	chmod +x .git-hooks/* && cp -R .git-hooks/* .git/hooks/
 
 ## audit: run quality control checks
 .PHONY: audit
