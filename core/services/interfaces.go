@@ -24,6 +24,7 @@ type EnumValidator interface {
 
 type Validator interface {
 	Struct(s interface{}) *apierrors.APIError
+	Var(f interface{}, tag string) *apierrors.APIError
 }
 
 type Authenticator interface {

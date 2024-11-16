@@ -28,7 +28,15 @@ func (*ValidatorV10) Close() error {
 func (d *ValidatorV10) Struct(s interface{}) *apierrors.APIError {
 	err := d.Validator.Struct(s)
 	if err != nil {
-		return apierrors.InternalServerError(err.Error())
+		return apierrors.BadRequest(err.Error())
+	}
+	return nil
+}
+
+func (d *ValidatorV10) Var(f interface{}, tag string) *apierrors.APIError {
+	err := d.Validator.Var(f, tag)
+	if err != nil {
+		return apierrors.BadRequest(err.Error())
 	}
 	return nil
 }
