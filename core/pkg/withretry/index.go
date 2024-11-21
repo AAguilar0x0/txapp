@@ -22,7 +22,7 @@ var DefaultConfig = RetryConfig{
 func WithRetry(
 	ctx context.Context,
 	config RetryConfig,
-	isTransient func(error) bool,
+	isRetry func(error) bool,
 	operation func(context.Context) error,
 ) error {
 	backoff := config.InitialBackoff
@@ -33,7 +33,7 @@ func WithRetry(
 			return nil
 		}
 
-		if !isTransient(err) {
+		if !isRetry(err) {
 			return err
 		}
 
