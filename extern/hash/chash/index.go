@@ -13,7 +13,10 @@ func New() (*CHash, error) {
 
 func (d *CHash) Hash(input string) (string, *apierrors.APIError) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(input), 15)
-	return string(bytes), apierrors.InternalServerError("cannot generate", err.Error())
+	if err != nil {
+		return "", apierrors.InternalServerError("cannot generate", err.Error())
+	}
+	return string(bytes), nil
 }
 
 func (d *CHash) CompareHash(input, hash string) bool {

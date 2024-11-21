@@ -2,9 +2,10 @@ package psql
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
-	"os"
+	"io/fs"
 	"runtime"
 	"strings"
 	"time"
@@ -20,6 +21,9 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+//go:embed migrations/*.sql
+var migrations embed.FS
+
 type Psql struct {
 	pool  *pgxpool.Pool
 	db    *dal.Queries
@@ -28,13 +32,22 @@ type Psql struct {
 }
 
 func transformError(err error) *apierrors.APIError {
+	if err == nil {
+		return nil
+	}
 	if err, ok := err.(*apierrors.APIError); ok {
 		return err
 	}
 	if errors.Is(err, pgx.ErrNoRows) {
-		return apierrors.NotFound("not found", err.Error())
+		return apierrors.NotFound("User not found", err.Error())
 	}
-	return apierrors.InternalServerError("an error occurred", err.Error())
+	if pgErr, ok := err.(*pgconn.PgError); ok {
+		switch pgErr.Code {
+		case "23505":
+			return apierrors.Conflict("User already exist", err.Error())
+		}
+	}
+	return apierrors.InternalServerError("An error occurred", err.Error())
 }
 
 func transientError(err error) bool {
@@ -85,7 +98,7 @@ func New(env services.Environment, idGen services.IDGenerator) (*Psql, error) {
 	d := dal.New(pool)
 	a.db = d
 
-	apiErr := a.Migrate("extern/db/psql/migrations", "up", nil, false)
+	apiErr := a.Migrate(migrations, "migrations", "up", nil, false)
 	if apiErr != nil {
 		return nil, apiErr
 	}
@@ -98,9 +111,9 @@ func (d *Psql) Close() error {
 	return nil
 }
 
-func (d *Psql) Migrate(dir, command string, version *int64, noVersioning bool) *apierrors.APIError {
+func (d *Psql) Migrate(fsys fs.FS, dir, command string, version *int64, noVersioning bool) *apierrors.APIError {
 	sqlDB := stdlib.OpenDBFromPool(d.pool)
-	goose.SetBaseFS(os.DirFS("./"))
+	goose.SetBaseFS(fsys)
 	if err := goose.SetDialect("pgx"); err != nil {
 		return apierrors.InternalServerError(err.Error())
 	}

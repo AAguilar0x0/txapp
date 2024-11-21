@@ -53,8 +53,16 @@ func NotFound(message string, args ...string) *APIError {
 	return New(http.StatusNotFound, message, args)
 }
 
+func Conflict(message string, args ...string) *APIError {
+	return New(http.StatusConflict, message, args)
+}
+
 func Unauthorized(message string, args ...string) *APIError {
 	return New(http.StatusUnauthorized, message, args)
+}
+
+func Forbidden(message string, args ...string) *APIError {
+	return New(http.StatusForbidden, message, args)
 }
 
 func RequestTimeout(message string, args ...string) *APIError {

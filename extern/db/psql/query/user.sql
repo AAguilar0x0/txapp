@@ -1,4 +1,4 @@
--- name: CreateUser :one
+-- name: UserCreate :one
 INSERT INTO users (
  id, email, first_name, last_name, password, role
 ) VALUES (
@@ -6,5 +6,8 @@ INSERT INTO users (
 )
 RETURNING *;
 
--- name: GetUserForAuth :one
+-- name: UserGetForAuth :one
 SELECT users.id, users.password, users.role FROM users WHERE email = $1;
+
+-- name: UserGetForAuthID :one
+SELECT users.role FROM users WHERE id = $1;

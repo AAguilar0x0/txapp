@@ -2,20 +2,28 @@ package main
 
 import (
 	"context"
+	"embed"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/AAguilar0x0/txapp/app/web/api"
+	"github.com/AAguilar0x0/txapp/app/web/constants"
 	"github.com/AAguilar0x0/txapp/app/web/pages"
+	"github.com/AAguilar0x0/txapp/app/web/pkg/cookiemngr"
+	"github.com/AAguilar0x0/txapp/app/web/pkg/middlewares"
+	"github.com/AAguilar0x0/txapp/app/web/pkg/vfs"
 	"github.com/AAguilar0x0/txapp/app/web/types"
 	"github.com/AAguilar0x0/txapp/bootstrap"
 	"github.com/AAguilar0x0/txapp/core/controllers"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/txapp/extern"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 )
+
+//go:embed static/*
+var static embed.FS
 
 type Web struct {
 	wg   *sync.WaitGroup
@@ -33,22 +41,30 @@ func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 		return nil, err
 	}
 	controllers := controllers.New(services)
-	user, err := controllers.User()
+	user, err := controllers.Auth()
 	if err != nil {
 		return nil, err
 	}
+	vfs, err := vfs.New(static, constants.StaticRoute, constants.StaticFilesMaxAge)
+	if err != nil {
+		return nil, err
+	}
+	cookie := cookiemngr.NewCookieManager("", true)
 
 	d := Web{
-		wg: &sync.WaitGroup{},
+		wg:   &sync.WaitGroup{},
+		port: env.GetDefault("PORT", "8080"),
 	}
 	h := &types.Handler{
-		Env:   env.Get("ENV"),
-		Wg:    d.wg,
-		Vldtr: validator,
-		User:  user,
+		Env:         env.Get("ENV"),
+		Wg:          d.wg,
+		Vldtr:       validator,
+		Auth:        user,
+		Cookie:      cookie,
+		Middlewares: middlewares.New(cookie, user, vfs),
+		VFS:         vfs,
 	}
 
-	d.port = env.GetDefault("PORT", "8080")
 	d.e = echo.New()
 
 	d.e.HTTPErrorHandler = func(err error, c echo.Context) {
@@ -63,8 +79,26 @@ func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 		}
 		c.String(code, msg)
 	}
-	d.e.Use(middleware.RemoveTrailingSlash())
-	d.e.Static("/static", "app/web/static")
+
+	d.e.Use(
+		h.Middlewares.RateLimit(),
+		h.Middlewares.RemoveTrailingSlash(),
+		h.Middlewares.BodyDump(h.Env),
+	)
+
+	// d.e.Static("/static", "app/web/static")
+	// d.e.GET("/static/*", func(c echo.Context) error {
+	// 	path := "app/web/static/" + c.Param("*")
+	// 	etag := h.Static.FilesChecksum(c.Param("*"))
+	// 	if match := c.Request().Header.Get("If-None-Match"); match != "" && match == etag {
+	// 		return c.NoContent(http.StatusNotModified)
+	// 	}
+	// 	c.Response().Header().Set("Cache-Control", "public, max-age=31536000")
+	// 	c.Response().Header().Set("ETag", etag)
+	// 	return c.File(path)
+	// })
+	d.e.GET(constants.StaticRoute+"/*", echo.WrapHandler(h.VFS))
+
 	pages.New(d.e.Group(""), h)
 	api.New(d.e.Group("/api"), h)
 
@@ -73,7 +107,10 @@ func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 
 func (d *Web) Run() {
 	if err := d.e.Start(":" + d.port); err != nil && err != http.ErrServerClosed {
-		d.e.Logger.Fatal("shutting down the server")
+		d.e.Logger.Fatalj(log.JSON{
+			"message": "shutting down the server",
+			"error":   err.Error(),
+		})
 	}
 }
 

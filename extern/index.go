@@ -5,22 +5,22 @@ import (
 
 	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/services"
-	authcustom "github.com/AAguilar0x0/txapp/extern/auth/custom"
 	"github.com/AAguilar0x0/txapp/extern/db/psql"
 	"github.com/AAguilar0x0/txapp/extern/env"
 	"github.com/AAguilar0x0/txapp/extern/hash/chash"
 	"github.com/AAguilar0x0/txapp/extern/idgen/ksuid"
+	"github.com/AAguilar0x0/txapp/extern/jwt/golangjwt"
 	"github.com/AAguilar0x0/txapp/extern/validator/validatorv10"
 )
 
 type DefaultServiceProvider struct {
-	environment   services.Environment
-	database      models.DatabaseManager
-	validator     services.Validator
-	authenticator services.Authenticator
-	hash          services.Hash
-	idGenerator   services.IDGenerator
-	closable      []io.Closer
+	environment services.Environment
+	database    models.DatabaseManager
+	validator   services.Validator
+	jwt         services.JWTokenizer
+	hash        services.Hash
+	idGenerator services.IDGenerator
+	closable    []io.Closer
 }
 
 func New() *DefaultServiceProvider {
@@ -76,16 +76,20 @@ func (d *DefaultServiceProvider) Validator() (services.Validator, error) {
 	return d.validator, nil
 }
 
-func (d *DefaultServiceProvider) Authenticator() (services.Authenticator, error) {
-	if d.authenticator == nil {
-		data, err := authcustom.New(d.environment)
+func (d *DefaultServiceProvider) JWTokenizer() (services.JWTokenizer, error) {
+	if d.jwt == nil {
+		idGen, err := d.IDGenerator()
 		if err != nil {
 			return nil, err
 		}
-		d.authenticator = data
+		data, err := golangjwt.New(d.environment, idGen)
+		if err != nil {
+			return nil, err
+		}
+		d.jwt = data
 		d.cleanup(data)
 	}
-	return d.authenticator, nil
+	return d.jwt, nil
 }
 
 func (d *DefaultServiceProvider) Hash() (services.Hash, error) {

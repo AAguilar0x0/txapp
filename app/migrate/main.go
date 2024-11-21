@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"log/slog"
 	"strconv"
 
@@ -10,8 +11,10 @@ import (
 	"github.com/AAguilar0x0/txapp/extern"
 )
 
+//go:embed migrations/*.sql
+var migrations embed.FS
+
 type Migrate struct {
-	dir     string
 	command string
 	version *int64
 	migrate models.Migrator
@@ -27,7 +30,6 @@ func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 		return nil, err
 	}
 
-	dir := env.GetDefault("dir", "app/migrate/migrations")
 	command := env.GetDefault("command", "up")
 	versionStr := env.Get("version")
 	var version *int64 = nil
@@ -40,7 +42,6 @@ func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 		version = &temp
 	}
 	d := Migrate{
-		dir:     dir,
 		command: command,
 		version: version,
 		migrate: migrate,
@@ -50,7 +51,7 @@ func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 }
 
 func (d *Migrate) Run() {
-	if err := d.migrate.Migrate(d.dir, d.command, d.version, true); err != nil {
+	if err := d.migrate.Migrate(migrations, "migrations", d.command, d.version, true); err != nil {
 		slog.Error("Error running migration", "error", err.Error())
 	}
 }

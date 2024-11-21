@@ -198,6 +198,8 @@ func getFieldType(expr ast.Expr) string {
 		return t.Name
 	case *ast.SelectorExpr:
 		return fmt.Sprintf("%s.%s", t.X.(*ast.Ident).Name, t.Sel.Name)
+	case *ast.StarExpr:
+		return "*" + getFieldType(t.X)
 	default:
 		return fmt.Sprintf("%T", expr)
 	}
@@ -244,6 +246,7 @@ const interfaceTemplate = `package models
 
 import (
 	"context"
+	"time"
 	"%s/core/pkg/apierrors"
 )
 {{range .}}

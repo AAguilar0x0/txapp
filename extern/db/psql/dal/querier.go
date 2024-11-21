@@ -6,11 +6,17 @@ package dal
 
 import (
 	"context"
+	"time"
 )
 
 type Querier interface {
-	CreateUser(ctx context.Context, email string, firstName string, lastName string, password string, role string, newID string) (User, error)
-	GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, error)
+	RefreshTokenCreate(ctx context.Context, iD string, userID string, expiresAt time.Time) error
+	RefreshTokenDelete(ctx context.Context, id string) (int64, error)
+	RefreshTokenDeleteFromUser(ctx context.Context, userID string) (int64, error)
+	RefreshTokenGet(ctx context.Context, iD string, userID string) (*RefreshToken, error)
+	UserCreate(ctx context.Context, email string, firstName string, lastName string, password string, role string, newID string) (*User, error)
+	UserGetForAuth(ctx context.Context, email string) (*UserGetForAuthRow, error)
+	UserGetForAuthID(ctx context.Context, id string) (string, error)
 }
 
 var _ Querier = (*Queries)(nil)

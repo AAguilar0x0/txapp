@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"io"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -50,6 +51,8 @@ func (d *App) Start(init Initializer) {
 		}
 
 		data.Close()
+	} else {
+		slog.Error("Encountered an error while initializing the app", "error", err.Error())
 	}
 
 	err = d.services.Close()

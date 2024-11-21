@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/AAguilar0x0/txapp/core/controllers/user"
+	"github.com/AAguilar0x0/txapp/core/controllers/auth"
 )
 
 type ControllerFactory interface {
-	User() (*user.User, error)
+	Auth() (*auth.Auth, error)
 }

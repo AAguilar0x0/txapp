@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/AAguilar0x0/txapp/core/controllers/user"
+	"github.com/AAguilar0x0/txapp/core/controllers/auth"
 	"github.com/AAguilar0x0/txapp/core/services"
 )
 
@@ -14,12 +14,12 @@ func New(services services.ServiceProvider) *DefaultControllerFactory {
 	return &d
 }
 
-func (d *DefaultControllerFactory) User() (*user.User, error) {
+func (d *DefaultControllerFactory) Auth() (*auth.Auth, error) {
 	db, err := d.services.Database()
 	if err != nil {
 		return nil, err
 	}
-	auth, err := d.services.Authenticator()
+	jwt, err := d.services.JWTokenizer()
 	if err != nil {
 		return nil, err
 	}
@@ -27,5 +27,5 @@ func (d *DefaultControllerFactory) User() (*user.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return user.New(db, auth, hash)
+	return auth.New(db, jwt, hash)
 }

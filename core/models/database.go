@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"io/fs"
 
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 )
@@ -14,7 +15,7 @@ type Database interface {
 }
 
 type Migrator interface {
-	Migrate(dir, command string, version *int64, noVersioning bool) *apierrors.APIError
+	Migrate(fsys fs.FS, dir, command string, version *int64, noVersioning bool) *apierrors.APIError
 }
 
 type DatabaseManager interface {

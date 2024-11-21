@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :one
+const userCreate = `-- name: UserCreate :one
 INSERT INTO users (
  id, email, first_name, last_name, password, role
 ) VALUES (
@@ -18,8 +18,8 @@ INSERT INTO users (
 RETURNING id, email, password, first_name, last_name, role, created_at, updated_at
 `
 
-func (q *Queries) CreateUser(ctx context.Context, email string, firstName string, lastName string, password string, role string, newID string) (User, error) {
-	row := q.db.QueryRow(ctx, createUser,
+func (q *Queries) UserCreate(ctx context.Context, email string, firstName string, lastName string, password string, role string, newID string) (*User, error) {
+	row := q.db.QueryRow(ctx, userCreate,
 		email,
 		firstName,
 		lastName,
@@ -38,22 +38,33 @@ func (q *Queries) CreateUser(ctx context.Context, email string, firstName string
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
-const getUserForAuth = `-- name: GetUserForAuth :one
+const userGetForAuth = `-- name: UserGetForAuth :one
 SELECT users.id, users.password, users.role FROM users WHERE email = $1
 `
 
-type GetUserForAuthRow struct {
+type UserGetForAuthRow struct {
 	ID       string `json:"id"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
 }
 
-func (q *Queries) GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, error) {
-	row := q.db.QueryRow(ctx, getUserForAuth, email)
-	var i GetUserForAuthRow
+func (q *Queries) UserGetForAuth(ctx context.Context, email string) (*UserGetForAuthRow, error) {
+	row := q.db.QueryRow(ctx, userGetForAuth, email)
+	var i UserGetForAuthRow
 	err := row.Scan(&i.ID, &i.Password, &i.Role)
-	return i, err
+	return &i, err
+}
+
+const userGetForAuthID = `-- name: UserGetForAuthID :one
+SELECT users.role FROM users WHERE id = $1
+`
+
+func (q *Queries) UserGetForAuthID(ctx context.Context, id string) (string, error) {
+	row := q.db.QueryRow(ctx, userGetForAuthID, id)
+	var role string
+	err := row.Scan(&role)
+	return role, err
 }
