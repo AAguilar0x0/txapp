@@ -23,11 +23,21 @@ func (d *Psql) UserCreate(ctx context.Context, email string, firstName string, l
 }
 
 func (d *Psql) UserGetForAuth(ctx context.Context, email string) (*models.UserGetForAuthRow, *apierrors.APIError) {
-	data, err := d.db.UserGetForAuth(ctx, email)
-	return (*models.UserGetForAuthRow)(data), transformError(err)
+	var data *models.UserGetForAuthRow
+	errI := withretry.WithRetry(ctx, withretry.DefaultConfig, transientError, func(ctx context.Context) error {
+		result, err := d.db.UserGetForAuth(ctx, email)
+		data = (*models.UserGetForAuthRow)(result)
+		return err
+	})
+	return data, transformError(errI)
 }
 
 func (d *Psql) UserGetForAuthID(ctx context.Context, id string) (string, *apierrors.APIError) {
-	data, err := d.db.UserGetForAuthID(ctx, id)
-	return data, transformError(err)
+	var data string
+	errI := withretry.WithRetry(ctx, withretry.DefaultConfig, transientError, func(ctx context.Context) error {
+		result, err := d.db.UserGetForAuthID(ctx, id)
+		data = result
+		return err
+	})
+	return data, transformError(errI)
 }
