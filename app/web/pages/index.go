@@ -1,9 +1,9 @@
 package pages
 
 import (
-	"github.com/AAguilar0x0/txapp/cmd/web/pages/components"
-	"github.com/AAguilar0x0/txapp/cmd/web/pages/utils"
-	"github.com/AAguilar0x0/txapp/cmd/web/types"
+	"github.com/AAguilar0x0/txapp/app/web/pages/components"
+	"github.com/AAguilar0x0/txapp/app/web/pages/utils"
+	"github.com/AAguilar0x0/txapp/app/web/types"
 	"github.com/labstack/echo/v4"
 )
 

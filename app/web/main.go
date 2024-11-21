@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AAguilar0x0/txapp/app"
-	"github.com/AAguilar0x0/txapp/cmd/web/api"
-	"github.com/AAguilar0x0/txapp/cmd/web/pages"
-	"github.com/AAguilar0x0/txapp/cmd/web/types"
+	"github.com/AAguilar0x0/txapp/app/web/api"
+	"github.com/AAguilar0x0/txapp/app/web/pages"
+	"github.com/AAguilar0x0/txapp/app/web/types"
+	"github.com/AAguilar0x0/txapp/bootstrap"
 	"github.com/AAguilar0x0/txapp/core/controllers"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/txapp/extern"
@@ -23,7 +23,7 @@ type Web struct {
 	port string
 }
 
-func New(services app.ServiceProvider) (app.Lifecycle, error) {
+func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 	env, err := services.Environment()
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func New(services app.ServiceProvider) (app.Lifecycle, error) {
 		c.String(code, msg)
 	}
 	d.e.Use(middleware.RemoveTrailingSlash())
-	d.e.Static("/static", "cmd/web/static")
+	d.e.Static("/static", "app/web/static")
 	pages.New(d.e.Group(""), h)
 	api.New(d.e.Group("/api"), h)
 
@@ -95,6 +95,6 @@ func (d *Web) Close() {
 // @host localhost:8080
 // @BasePath /api
 func main() {
-	a := app.New(extern.New())
+	a := bootstrap.New(extern.New())
 	a.Start(New)
 }

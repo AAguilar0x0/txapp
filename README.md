@@ -83,13 +83,13 @@ For Docker and Docker Compose installation instructions specific to your operati
 2. Run the web application:
     #### Development mode (with live reload):
     ```bash
-    make cmd/web/live
+    make app/web/live
     ```
 
     #### Production mode:
     ```bash
-    make cmd/web/build
-    make cmd/web/bin
+    make app/web/build
+    make app/web/bin
     ```
 
     #### Using Docker:

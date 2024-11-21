@@ -1,4 +1,4 @@
-package app
+package bootstrap
 
 type Initializer func(services ServiceProvider) (Lifecycle, error)
 

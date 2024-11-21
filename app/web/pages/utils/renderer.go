@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/AAguilar0x0/txapp/cmd/web/pages/components"
+	"github.com/AAguilar0x0/txapp/app/web/pages/components"
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 )

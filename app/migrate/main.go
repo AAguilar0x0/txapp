@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"strconv"
 
-	"github.com/AAguilar0x0/txapp/app"
+	"github.com/AAguilar0x0/txapp/bootstrap"
 	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/assert"
 	"github.com/AAguilar0x0/txapp/extern"
@@ -17,7 +17,7 @@ type Migrate struct {
 	migrate models.Migrator
 }
 
-func New(services app.ServiceProvider) (app.Lifecycle, error) {
+func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 	env, err := services.Environment()
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func New(services app.ServiceProvider) (app.Lifecycle, error) {
 		return nil, err
 	}
 
-	dir := env.GetDefault("dir", "cmd/migrate/migrations")
+	dir := env.GetDefault("dir", "app/migrate/migrations")
 	command := env.GetDefault("command", "up")
 	versionStr := env.Get("version")
 	var version *int64 = nil
@@ -58,6 +58,6 @@ func (d *Migrate) Run() {
 func (d *Migrate) Close() {}
 
 func main() {
-	a := app.New(extern.New())
+	a := bootstrap.New(extern.New())
 	a.Start(New)
 }
