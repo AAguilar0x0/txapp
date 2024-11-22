@@ -3,9 +3,9 @@ package types
 import (
 	"sync"
 
-	"github.com/AAguilar0x0/txapp/app/web/pkg/cookiemngr"
-	"github.com/AAguilar0x0/txapp/app/web/pkg/middlewares"
-	"github.com/AAguilar0x0/txapp/app/web/pkg/vfs"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/cookiemngr"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/middlewares"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/vfs"
 	"github.com/AAguilar0x0/txapp/core/controllers/auth"
 	"github.com/AAguilar0x0/txapp/core/services"
 )

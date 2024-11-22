@@ -10,8 +10,8 @@
 /bin
 /tmp
 /.vscode
-/app/web/docs/*
-!/app/web/docs/placeholder.go
+/cmd/web/docs/*
+!/cmd/web/docs/placeholder.go
 /extern/db/psql/querier.go
 
 # Test binary, built with `go test -c`

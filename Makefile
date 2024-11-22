@@ -65,9 +65,9 @@ install:
 .PHONY: install/bin
 install/bin:
 	go install github.com/air-verse/air@latest
-	go install github.com/swaggo/swag/app/swag@latest
-	go install github.com/sqlc-dev/sqlc/app/sqlc@latest
-	go install github.com/a-h/templ/app/templ@latest
+	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	go install github.com/a-h/templ/cmd/templ@latest
 
 ## docker: run the application with docker
 .PHONY: docker
@@ -97,40 +97,40 @@ templ:
 ## tailwindcss: generate css from tailwindcss
 .PHONY: tailwindcss
 tailwindcss:
-	npx tailwindcss -i ./app/web/static/input.css -o ./app/web/static/output.css --minify
+	npx tailwindcss -i ./cmd/web/static/input.css -o ./cmd/web/static/output.css --minify
 
 ## swagger: generate swagger docs
 .PHONY: swagger
 swagger:
-	(cd ./app/web && swag init --parseDependency)
+	(cd ./cmd/web && swag init --parseDependency)
 
 
 # ==================================================================================== #
 # APPLICATIONS
 # ==================================================================================== #
 
-## app/web/build: build the web application
-.PHONY: app/web/build
-app/web/build:
-	go build -v -o=${MAIN_PACKAGE_PATH}/web ./app/web
+## cmd/web/build: build the web application
+.PHONY: cmd/web/build
+cmd/web/build:
+	go build -v -o=${MAIN_PACKAGE_PATH}/web ./cmd/web
 
-## app/web/bin: execute the web application binary
-.PHONY: app/web/bin
-app/web/bin:
+## cmd/web/bin: execute the web application binary
+.PHONY: cmd/web/bin
+cmd/web/bin:
 	${MAIN_PACKAGE_PATH}/web
 
-## app/web/live: run the application with reloading on file changes
-.PHONY: app/web/live
-app/web/live:
+## cmd/web/live: run the application with reloading on file changes
+.PHONY: cmd/web/live
+cmd/web/live:
 	air
 
-## app/migrate/run: run the migrate application
-.PHONY: app/migrate/run
-app/migrate/run:
-	go run ./app/migrate/main.go
+## cmd/migrate/run: run the migrate application
+.PHONY: cmd/migrate/run
+cmd/migrate/run:
+	go run ./cmd/migrate/main.go
 
-## app/sqlcore/run: run the sqlc to core codegen
-.PHONY: app/sqlcore/run
-app/sqlcore/run:
-	go run ./app/sqlcore/main.go
+## cmd/sqlcore/run: run the sqlc to core codegen
+.PHONY: cmd/sqlcore/run
+cmd/sqlcore/run:
+	go run ./cmd/sqlcore/main.go
 	go fmt ./core/models

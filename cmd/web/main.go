@@ -7,14 +7,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AAguilar0x0/txapp/app/web/api"
-	"github.com/AAguilar0x0/txapp/app/web/constants"
-	"github.com/AAguilar0x0/txapp/app/web/pages"
-	"github.com/AAguilar0x0/txapp/app/web/pkg/cookiemngr"
-	"github.com/AAguilar0x0/txapp/app/web/pkg/middlewares"
-	"github.com/AAguilar0x0/txapp/app/web/pkg/vfs"
-	"github.com/AAguilar0x0/txapp/app/web/types"
 	"github.com/AAguilar0x0/txapp/bootstrap"
+	"github.com/AAguilar0x0/txapp/cmd/web/api"
+	"github.com/AAguilar0x0/txapp/cmd/web/constants"
+	"github.com/AAguilar0x0/txapp/cmd/web/pages"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/cookiemngr"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/middlewares"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/vfs"
+	"github.com/AAguilar0x0/txapp/cmd/web/types"
 	"github.com/AAguilar0x0/txapp/core/controllers"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/txapp/extern"
@@ -86,9 +86,9 @@ func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
 		h.Middlewares.BodyDump(h.Env),
 	)
 
-	// d.e.Static("/static", "app/web/static")
+	// d.e.Static("/static", "cmd/web/static")
 	// d.e.GET("/static/*", func(c echo.Context) error {
-	// 	path := "app/web/static/" + c.Param("*")
+	// 	path := "cmd/web/static/" + c.Param("*")
 	// 	etag := h.Static.FilesChecksum(c.Param("*"))
 	// 	if match := c.Request().Header.Get("If-None-Match"); match != "" && match == etag {
 	// 		return c.NoContent(http.StatusNotModified)

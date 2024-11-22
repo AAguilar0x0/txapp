@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/AAguilar0x0/txapp/app/web/constants"
-	"github.com/AAguilar0x0/txapp/app/web/pkg/cookiemngr"
-	"github.com/AAguilar0x0/txapp/app/web/pkg/vfs"
+	"github.com/AAguilar0x0/txapp/cmd/web/constants"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/cookiemngr"
+	"github.com/AAguilar0x0/txapp/cmd/web/pkg/vfs"
 	"github.com/AAguilar0x0/txapp/core/constants/envmodes"
 	"github.com/AAguilar0x0/txapp/core/controllers/auth"
 	"github.com/labstack/echo/v4"
