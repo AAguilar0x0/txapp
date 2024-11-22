@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/AAguilar0x0/txapp/bootstrap"
-	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/assert"
+	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/AAguilar0x0/txapp/extern"
 )
 
@@ -17,7 +17,7 @@ var migrations embed.FS
 type Migrate struct {
 	command string
 	version *int64
-	migrate models.Migrator
+	migrate services.Migrator
 }
 
 func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {

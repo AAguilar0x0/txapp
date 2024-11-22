@@ -2,7 +2,6 @@ package services
 
 import (
 	"io"
-	"time"
 
 	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
@@ -10,8 +9,8 @@ import (
 
 type ServiceProvider interface {
 	Environment() (Environment, error)
-	Database() (models.Database, error)
-	Migrator() (models.Migrator, error)
+	Database() (Database, error)
+	Migrator() (Migrator, error)
 	Validator() (Validator, error)
 	JWTokenizer() (JWTokenizer, error)
 	Hash() (Hash, error)
@@ -29,23 +28,15 @@ type Validator interface {
 }
 
 type AuthTokens struct {
-	RefreshTokenID        string
-	RefreshToken          string
-	RefreshTokenExpiresAt time.Time
-	AccessToken           string
-}
-
-type TokenValid struct {
-	Expired        bool
-	UserID         string
-	RefreshTokenID string
+	RefreshToken models.Token
+	RefreshJWT   string
+	AccessJWT    string
 }
 
 type JWTokenizer interface {
 	GetJWTSubjectID(token string) (string, string, *apierrors.APIError)
-	GenerateToken(id, role string, durationMinutes uint, HS512Key string) (string, *apierrors.APIError)
-	VerifyJWT(token string) *apierrors.APIError
-	IsAccessTokenValid(accessToken, refreshToken string) (*TokenValid, *apierrors.APIError)
+	GenerateToken(id, role string, durationMinutes uint, key string) (string, *apierrors.APIError)
+	VerifyJWT(token string) (models.Token, *apierrors.APIError)
 	GenerateAuthTokens(id, role string) (*AuthTokens, *apierrors.APIError)
 }
 

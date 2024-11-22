@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/AAguilar0x0/txapp/extern/db/psql/dal"
@@ -145,7 +144,7 @@ func (d *Psql) Migrate(fsys fs.FS, dir, command string, version *int64, noVersio
 	return nil
 }
 
-func (d *Psql) Begin(ctx context.Context) (models.Database, *apierrors.APIError) {
+func (d *Psql) Begin(ctx context.Context) (services.Database, *apierrors.APIError) {
 	if d.tx != nil {
 		return d, nil
 	}

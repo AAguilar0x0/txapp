@@ -16,11 +16,11 @@ func (d *Psql) RefreshTokenCreate(ctx context.Context, id, userID string, expira
 	return transformError(errI)
 }
 
-func (d *Psql) RefreshTokenGet(ctx context.Context, id, userID string) (*models.RefreshToken, *apierrors.APIError) {
-	var data *models.RefreshToken
+func (d *Psql) RefreshTokenGet(ctx context.Context, id, userID string) (models.Token, *apierrors.APIError) {
+	var data models.Token
 	errI := withretry.WithRetry(ctx, withretry.DefaultConfig, transientError, func(ctx context.Context) error {
 		result, err := d.db.RefreshTokenGet(ctx, id, userID)
-		data = (*models.RefreshToken)(result)
+		data = result
 		return err
 	})
 	return data, transformError(errI)

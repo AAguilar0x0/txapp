@@ -3,7 +3,6 @@ package extern
 import (
 	"io"
 
-	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/AAguilar0x0/txapp/extern/db/psql"
 	"github.com/AAguilar0x0/txapp/extern/env"
@@ -15,7 +14,7 @@ import (
 
 type DefaultServiceProvider struct {
 	environment services.Environment
-	database    models.DatabaseManager
+	database    services.DatabaseManager
 	validator   services.Validator
 	jwt         services.JWTokenizer
 	hash        services.Hash
@@ -40,7 +39,7 @@ func (d *DefaultServiceProvider) Environment() (services.Environment, error) {
 	return d.environment, nil
 }
 
-func (d *DefaultServiceProvider) databaseManager() (models.DatabaseManager, error) {
+func (d *DefaultServiceProvider) databaseManager() (services.DatabaseManager, error) {
 	if d.database == nil {
 		idGen, err := d.IDGenerator()
 		if err != nil {
@@ -56,11 +55,11 @@ func (d *DefaultServiceProvider) databaseManager() (models.DatabaseManager, erro
 	return d.database, nil
 }
 
-func (d *DefaultServiceProvider) Database() (models.Database, error) {
+func (d *DefaultServiceProvider) Database() (services.Database, error) {
 	return d.databaseManager()
 }
 
-func (d *DefaultServiceProvider) Migrator() (models.Migrator, error) {
+func (d *DefaultServiceProvider) Migrator() (services.Migrator, error) {
 	return d.databaseManager()
 }
 

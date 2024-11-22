@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/AAguilar0x0/txapp/core/constants"
+	"github.com/AAguilar0x0/txapp/core/models"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
 	"github.com/AAguilar0x0/txapp/core/services"
 	"github.com/golang-jwt/jwt/v5"
@@ -16,6 +17,22 @@ import (
 type Claims struct {
 	Role string `json:"role"`
 	jwt.RegisteredClaims
+}
+
+func (d *Claims) GetID() string {
+	return d.ID
+}
+
+func (d *Claims) GetSub() string {
+	return d.Subject
+}
+
+func (d *Claims) GetIss() string {
+	return d.Issuer
+}
+
+func (d *Claims) GetExp() time.Time {
+	return d.ExpiresAt.Time
 }
 
 type Jwt struct {
@@ -62,7 +79,7 @@ func (d *Jwt) parseKeyPairEdPrivateKeyFromPEM(key []byte) *apierrors.APIError {
 }
 
 func (d *Jwt) GetJWTSubjectID(token string) (string, string, *apierrors.APIError) {
-	t, err := d.verifyJWT(token, expiredToken)
+	_, t, err := d.verifyJWT(token, expiredToken)
 	if err != nil {
 		return "", "", err
 	}
@@ -97,7 +114,7 @@ func (d *Jwt) GenerateToken(id, role string, durationMinutes uint, HS512Key stri
 	return tokenStr, nil
 }
 
-func (d *Jwt) verifyJWT(token string, errorFilters ...errorFilter) (*Claims, *apierrors.APIError) {
+func (d *Jwt) verifyJWT(token string, errorFilters ...errorFilter) (*jwt.Token, *Claims, *apierrors.APIError) {
 	claims := Claims{}
 	jwt, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (interface{}, error) {
 		return d.pkey, nil
@@ -111,46 +128,21 @@ func (d *Jwt) verifyJWT(token string, errorFilters ...errorFilter) (*Claims, *ap
 			}
 		}
 		if returnError {
-			return &claims, apierrors.Unauthorized("Invalid token", err.Error())
+			return jwt, &claims, apierrors.Unauthorized("Invalid token", err.Error())
 		}
 	}
 	if !jwt.Valid && returnError {
-		return &claims, apierrors.Unauthorized("Invalid token")
+		return jwt, &claims, apierrors.Unauthorized("Invalid token")
 	}
-	return &claims, nil
+	return jwt, &claims, nil
 }
 
-func (d *Jwt) VerifyJWT(token string) *apierrors.APIError {
-	_, err := d.verifyJWT(token)
-	return err
-}
-
-func (d *Jwt) IsAccessTokenValid(accessToken, refreshToken string) (*services.TokenValid, *apierrors.APIError) {
-	data := services.TokenValid{}
-	rToken, err := d.verifyJWT(refreshToken)
-	if err != nil && expiredToken(err) {
-		data.RefreshTokenID = rToken.ID
-		return &data, err
-	} else if err != nil {
-		return nil, err
+func (d *Jwt) VerifyJWT(token string) (models.Token, *apierrors.APIError) {
+	jwt, data, err := d.verifyJWT(token, expiredToken)
+	if !jwt.Valid {
+		err = apierrors.Forbidden("Token expired")
 	}
-	data.UserID = rToken.Subject
-	data.RefreshTokenID = rToken.ID
-	aToken, err := d.verifyJWT(accessToken, expiredToken)
-	if err != nil {
-		return &data, err
-	}
-	if time.Now().Before(aToken.ExpiresAt.Time) {
-		return &data, nil
-	}
-	data.Expired = true
-	if aToken.Subject != rToken.Subject {
-		return &data, apierrors.Forbidden("User mismatch")
-	}
-	if aToken.Issuer != rToken.ID {
-		return &data, apierrors.Forbidden("Tokens mismatch")
-	}
-	return &data, nil
+	return data, err
 }
 
 func (d *Jwt) GenerateAuthTokens(id, role string) (*services.AuthTokens, *apierrors.APIError) {
@@ -159,7 +151,7 @@ func (d *Jwt) GenerateAuthTokens(id, role string) (*services.AuthTokens, *apierr
 		return nil, err
 	}
 	var method jwt.SigningMethod = jwt.SigningMethodEdDSA
-	claims := Claims{
+	rToken := Claims{
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(constants.RTokenDaysDuration * time.Hour * 24)),
@@ -169,23 +161,24 @@ func (d *Jwt) GenerateAuthTokens(id, role string) (*services.AuthTokens, *apierr
 			ID:        jwtID,
 		},
 	}
-	refreshToken, errI := jwt.NewWithClaims(method, claims).SignedString(d.skey)
+	refreshJWT, errI := jwt.NewWithClaims(method, rToken).SignedString(d.skey)
 	if errI != nil {
 		return nil, apierrors.InternalServerError("Cannot generate tokens", err.Error())
 	}
-	claims = Claims{
+	aToken := Claims{
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(constants.ATokenMinutesDuration * time.Minute)),
+			// ExpiresAt: jwt.NewNumericDate(time.Now().Add(constants.ATokenMinutesDuration * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 5)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Subject:   id,
 			Issuer:    jwtID,
 		},
 	}
-	accessToken, errI := jwt.NewWithClaims(method, claims).SignedString(d.skey)
+	accessJWT, errI := jwt.NewWithClaims(method, aToken).SignedString(d.skey)
 	if errI != nil {
 		return nil, apierrors.InternalServerError("Cannot generate tokens", err.Error())
 	}
-	return &services.AuthTokens{RefreshTokenID: jwtID, RefreshToken: refreshToken, RefreshTokenExpiresAt: claims.ExpiresAt.Time, AccessToken: accessToken}, nil
+	return &services.AuthTokens{RefreshToken: &rToken, RefreshJWT: refreshJWT, AccessJWT: accessJWT}, nil
 }
