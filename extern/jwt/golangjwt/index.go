@@ -168,8 +168,7 @@ func (d *Jwt) GenerateAuthTokens(id, role string) (*services.AuthTokens, *apierr
 	aToken := Claims{
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			// ExpiresAt: jwt.NewNumericDate(time.Now().Add(constants.ATokenMinutesDuration * time.Minute)),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 5)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(constants.ATokenMinutesDuration * time.Minute)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Subject:   id,
