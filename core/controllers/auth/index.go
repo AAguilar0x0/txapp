@@ -114,11 +114,11 @@ func (d *Auth) SignIn(ctx context.Context, email, password string) (string, stri
 }
 
 func (d *Auth) SignOut(ctx context.Context, refreshToken string) *apierrors.APIError {
-	_, id, err := d.jwt.GetJWTSubjectID(refreshToken)
+	t, err := d.jwt.GetJWT(refreshToken)
 	if err != nil {
 		return err
 	}
-	count, err := d.db.RefreshTokenDelete(ctx, id)
+	count, err := d.db.RefreshTokenDelete(ctx, t.GetSub())
 	if err != nil {
 		return err
 	}

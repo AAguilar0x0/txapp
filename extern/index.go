@@ -85,7 +85,7 @@ func (d *DefaultServiceProvider) JWTokenizer() (services.JWTokenizer, error) {
 		if err != nil {
 			return nil, err
 		}
-		d.jwt = data
+		// d.jwt = data
 		d.cleanup(data)
 	}
 	return d.jwt, nil

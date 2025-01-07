@@ -27,6 +27,16 @@ type Validator interface {
 	Var(f interface{}, tag string) *apierrors.APIError
 }
 
+// Encryption Start
+
+type Encryption int
+
+const (
+	EncryptEd25519 Encryption = iota
+	EncryptRSA
+	EncryptHS512
+)
+
 type AuthTokens struct {
 	RefreshToken models.Token
 	RefreshJWT   string
@@ -34,11 +44,27 @@ type AuthTokens struct {
 }
 
 type JWTokenizer interface {
-	GetJWTSubjectID(token string) (string, string, *apierrors.APIError)
-	GenerateToken(id, role string, durationMinutes uint, key string) (string, *apierrors.APIError)
+	GetJWT(token string) (models.Token, *apierrors.APIError)
+	GenerateToken(id, role string, durationMinutes uint) (string, *apierrors.APIError)
 	VerifyJWT(token string) (models.Token, *apierrors.APIError)
 	GenerateAuthTokens(id, role string) (*AuthTokens, *apierrors.APIError)
 }
+
+type AsymEncryptor interface {
+	PrivateKey(key []byte) (JWTokenizer, *apierrors.APIError)
+	PublicKey(key []byte) (JWTokenizer, *apierrors.APIError)
+}
+
+type SymEncryptor interface {
+	Key(key []byte) JWTokenizer
+}
+
+type Encryptor interface {
+	Asymmetric(Encryption) (AsymEncryptor, *apierrors.APIError)
+	Symmetric(Encryption) (SymEncryptor, *apierrors.APIError)
+}
+
+// Encryption End
 
 type Hash interface {
 	Hash(input string) (string, *apierrors.APIError)
