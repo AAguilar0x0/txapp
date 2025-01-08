@@ -14,12 +14,8 @@ func New(services services.ServiceProvider) *DefaultControllerFactory {
 	return &d
 }
 
-func (d *DefaultControllerFactory) Auth() (*auth.Auth, error) {
+func (d *DefaultControllerFactory) Auth(jwt services.JWTokenizer) (*auth.Auth, error) {
 	db, err := d.services.Database()
-	if err != nil {
-		return nil, err
-	}
-	jwt, err := d.services.JWTokenizer()
 	if err != nil {
 		return nil, err
 	}

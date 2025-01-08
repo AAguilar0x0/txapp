@@ -16,7 +16,7 @@ type DefaultServiceProvider struct {
 	environment services.Environment
 	database    services.DatabaseManager
 	validator   services.Validator
-	jwt         services.JWTokenizer
+	encryptor   services.Encryptor
 	hash        services.Hash
 	idGenerator services.IDGenerator
 	closable    []io.Closer
@@ -75,20 +75,19 @@ func (d *DefaultServiceProvider) Validator() (services.Validator, error) {
 	return d.validator, nil
 }
 
-func (d *DefaultServiceProvider) JWTokenizer() (services.JWTokenizer, error) {
-	if d.jwt == nil {
+func (d *DefaultServiceProvider) Encryptor() (services.Encryptor, error) {
+	if d.encryptor == nil {
 		idGen, err := d.IDGenerator()
 		if err != nil {
 			return nil, err
 		}
-		data, err := golangjwt.New(d.environment, idGen)
+		data, err := golangjwt.New(idGen)
 		if err != nil {
 			return nil, err
 		}
-		// d.jwt = data
-		d.cleanup(data)
+		d.encryptor = data
 	}
-	return d.jwt, nil
+	return d.encryptor, nil
 }
 
 func (d *DefaultServiceProvider) Hash() (services.Hash, error) {

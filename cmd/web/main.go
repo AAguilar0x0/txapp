@@ -17,6 +17,7 @@ import (
 	"github.com/AAguilar0x0/txapp/cmd/web/types"
 	"github.com/AAguilar0x0/txapp/core/controllers"
 	"github.com/AAguilar0x0/txapp/core/pkg/apierrors"
+	srvc "github.com/AAguilar0x0/txapp/core/services"
 	"github.com/AAguilar0x0/txapp/extern"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -32,22 +33,36 @@ type Web struct {
 }
 
 func New(services bootstrap.ServiceProvider) (bootstrap.Lifecycle, error) {
-	env, err := services.Environment()
+	env, serr := services.Environment()
+	if serr != nil {
+		return nil, serr
+	}
+	validator, serr := services.Validator()
+	if serr != nil {
+		return nil, serr
+	}
+	enc, serr := services.Encryptor()
+	if serr != nil {
+		return nil, serr
+	}
+
+	ed25519, err := enc.Asymmetric(srvc.EncryptEd25519)
 	if err != nil {
 		return nil, err
 	}
-	validator, err := services.Validator()
+	jwt, err := ed25519.PrivateKey([]byte(env.MustGet("AUTH_SECRET")))
 	if err != nil {
 		return nil, err
 	}
+
 	controllers := controllers.New(services)
-	user, err := controllers.Auth()
-	if err != nil {
-		return nil, err
+	user, serr := controllers.Auth(jwt)
+	if serr != nil {
+		return nil, serr
 	}
-	vfs, err := vfs.New(static, constants.StaticRoute, constants.StaticFilesMaxAge)
-	if err != nil {
-		return nil, err
+	vfs, serr := vfs.New(static, constants.StaticRoute, constants.StaticFilesMaxAge)
+	if serr != nil {
+		return nil, serr
 	}
 	cookie := cookiemngr.NewCookieManager("", true)
 

@@ -12,7 +12,7 @@ type ServiceProvider interface {
 	Database() (Database, error)
 	Migrator() (Migrator, error)
 	Validator() (Validator, error)
-	JWTokenizer() (JWTokenizer, error)
+	Encryptor() (Encryptor, error)
 	Hash() (Hash, error)
 	IDGenerator() (IDGenerator, error)
 	io.Closer
